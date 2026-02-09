@@ -25,7 +25,6 @@ export default async function JobDetail({
   }
 
   const job = data.job;
-
   const inputsAssets = job?.assets?.inputs || {};
   const inputTypes = Object.keys(inputsAssets);
 
@@ -39,19 +38,13 @@ export default async function JobDetail({
   };
 
   return (
-    <main className="p-8 font-sans">
+    <main className="font-sans">
       <a className="text-sm text-blue-600 hover:underline" href="/jobs">
         ← Back
       </a>
 
       <h1 className="mt-3 text-2xl font-bold">{job.jobId}</h1>
-      <p className="mt-2 text-gray-600">Status: {job.status || "unknown"}</p>
-
-      <div className="mt-6">
-        <a className="text-blue-600 hover:underline" href={`/jobs/${jobId}/report`}>
-          Image Analysis Report
-        </a>
-      </div>
+      <p className="mt-2 text-gray-400">Status: {job.status || "unknown"}</p>
 
       <div className="mt-6 grid gap-4">
         <div className="rounded-xl border p-4">
@@ -162,22 +155,149 @@ export default async function JobDetail({
       </div>
       
       {/* <h2>Data</h2> */}
-      <div className="mt-6 grid gap-4">
-        <div className="rounded-xl border p-4 hide">
-          <div className="text-sm font-semibold">Inputs</div>
-          <pre className="mt-2 text-xs">{JSON.stringify(job.inputs || {}, null, 2)}</pre>
+ <div className="mt-6 grid gap-4">
+  <div className="rounded-xl border p-4 hide">
+    <div className="text-sm font-semibold">Inputs</div>
+    <pre className="mt-2 text-xs">{JSON.stringify(job.inputs || {}, null, 2)}</pre>
+  </div>
+
+  {/* ✅ NEW: Analysis */}
+  <div className="rounded-xl border p-4">
+    <div className="text-sm font-semibold">Analysis</div>
+
+    <div className="mt-6">
+      <p className="mt-2 text-gray-600">Status: {job.status || "unknown"}</p>
+
+      {job.status === "analysis_done" && (
+          <a className="text-blue-600 hover:underline" href={`/jobs/${jobId}/report`}>
+            View Image Analysis Report
+          </a>
+      )}
+          
+    </div>
+
+    {job.analysis ? (
+      <div className="mt-3 grid gap-4">
+        {/* Summary */}
+        <div className="grid gap-1 text-sm">
+                {job?.analysis?.promptId ? (
+              <div className="text-sm">
+                <span className="text-gray-500">prompt used:</span>{" "}
+                <a
+                  className="text-blue-600 hover:underline font-mono"
+                  href={`/admin/prompts/${encodeURIComponent(job.analysis.promptId)}`}
+                >
+                  {job.analysis.promptId}
+                </a>
+                {job?.analysis?.promptKey ? (
+                  <span className="text-gray-500"> ({job.analysis.promptKey})</span>
+                ) : null}
+              </div>
+            ) : (
+              <div className="text-sm text-gray-500">prompt: -</div>
+            )}
+          <div>
+            <span className="text-gray-500">startedAt:</span>{" "}
+            <span className="font-mono">{job.analysis.startedAt || "-"}</span>
+          </div>
+          <div>
+            <span className="text-gray-500">finishedAt:</span>{" "}
+            <span className="font-mono">{job.analysis.finishedAt || "-"}</span>
+          </div>
+          <div>
+            <span className="text-gray-500">outPath:</span>{" "}
+            <span className="font-mono break-all">{job.analysis.outPath || "-"}</span>
+          </div>
+          <div>
+            <span className="text-gray-500">requestBytes:</span>{" "}
+            <span className="font-mono">{job.analysis.openaiRequestBytes ?? "-"}</span>
+          </div>
         </div>
 
-        <div className="rounded-xl border p-4">
-          <div className="text-sm font-semibold">Events</div>
-          <pre className="mt-2 text-xs">{JSON.stringify(job.events || [], null, 2)}</pre>
-        </div>
+        {/* Image URLs (clickable) */}
+        {Array.isArray(job.analysis.imageUrls) && job.analysis.imageUrls.length > 0 ? (
+          <div>
+            <div className="text-xs font-semibold text-gray-500 mb-2">Image URLs (click to verify)</div>
+            <div className="grid gap-2">
+              {job.analysis.imageUrls.map((img: any, idx: number) => (
+                <div key={`${img?.label || "img"}-${idx}`} className="text-sm">
+                  <div className="font-mono text-xs text-gray-600">
+                    {img?.label || `image_${idx + 1}`} {img?.modality ? `(${img.modality})` : ""}
+                  </div>
+                  {img?.url ? (
+                    <a
+                      className="text-blue-600 hover:underline break-all"
+                      href={img.url}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {img.url}
+                    </a>
+                  ) : (
+                    <div className="text-gray-500 text-xs">(missing url)</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="text-sm text-gray-500">No analysis.imageUrls found.</div>
+        )}
 
-        <div className="rounded-xl border p-4">
-          <div className="text-sm font-semibold">Error</div>
-          <pre className="mt-2 text-xs">{JSON.stringify(job.error || null, null, 2)}</pre>
-        </div>
+        {/* OpenAI Request Snapshot */}
+        {job.analysis.openaiRequest ? (
+          <div>
+            <div className="text-xs font-semibold text-gray-500 mb-2">OpenAI Request Snapshot</div>
+
+            <div className="grid gap-1 text-sm">
+              <div>
+                <span className="text-gray-500">endpoint:</span>{" "}
+                <span className="font-mono break-all">{job.analysis.openaiRequest.endpoint || "-"}</span>
+              </div>
+              <div>
+                <span className="text-gray-500">model:</span>{" "}
+                <span className="font-mono">{job.analysis.openaiRequest.model || "-"}</span>
+              </div>
+
+
+            </div>
+
+            <pre className="mt-3 text-xs rounded-lg border p-3 bg-black/[0.02] overflow-auto">
+              {JSON.stringify(job.analysis.openaiRequest, null, 2)}
+            </pre>
+          </div>
+        ) : (
+          <div className="text-sm text-gray-500">No analysis.openaiRequest found.</div>
+        )}
+
+        {job.analysis ? (
+          <div>
+            <div className="text-xs font-semibold text-gray-500 mb-2">Analysis Data Dump</div>
+            <pre className="mt-3 text-xs rounded-lg border p-3 bg-black/[0.02] overflow-auto">
+              {JSON.stringify(job.analysis, null, 2)}
+            </pre>
+          </div>
+        ) : (
+          <div className="text-sm text-gray-500">No analysis found.</div>
+        )}
       </div>
+    ) : (
+      <div className="mt-2 text-sm text-gray-500">No analysis data yet.</div>
+    )}
+  </div>
+
+  {/* Events */}
+  <div className="rounded-xl border p-4">
+    <div className="text-sm font-semibold">Events</div>
+    <pre className="mt-2 text-xs">{JSON.stringify(job.events || [], null, 2)}</pre>
+  </div>
+
+  <div className="rounded-xl border p-4">
+    <div className="text-sm font-semibold">Error</div>
+    <pre className="mt-2 text-xs">{JSON.stringify(job.error || null, null, 2)}</pre>
+  </div>
+</div>
+
     </main>
   );
 }

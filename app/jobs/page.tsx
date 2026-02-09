@@ -14,7 +14,7 @@ function StatusPill({ status }: { status: string }) {
 
   let cls = "border-gray-300 text-gray-700 bg-white";
   if (s.includes("fail")) cls = "border-red-300 text-red-700 bg-red-50";
-  else if (s.includes("analy")) cls = "border-blue-300 text-blue-700 bg-blue-50";
+  else if (s.includes("analy")) cls = "border-blue-300 text-blue-700";
   else if (s.includes("normal")) cls = "border-purple-300 text-purple-700 bg-purple-50";
   else if (s.includes("done") || s.includes("complete")) cls = "border-green-300 text-green-700 bg-green-50";
   else if (s.includes("upload")) cls = "border-yellow-300 text-yellow-800 bg-yellow-50";
@@ -29,15 +29,30 @@ export default async function JobsPage() {
   const jobs: JobRow[] = data?.jobs || [];
 
   return (
-    <main className="p-8 font-sans">
+    <main className="font-sans">
       <div className="flex items-end justify-between">
         <div>
           <h1 className="text-2xl font-bold">Jobs</h1>
-          <p className="mt-2 text-gray-600">Latest jobs from Mongo</p>
+          <p className="mt-2 text-gray-600">Latest jobs from DB</p>
         </div>
-        <a className="text-sm text-blue-600 hover:underline" href="/">
-          Home
+        <div>
+        <a
+          href="/jobs/new"
+          style={{
+            padding: "10px 12px",
+            marginLeft: "20px",
+            borderRadius: 12,
+            border: "1px solid #111",
+            color: "#fff",
+            fontWeight: 700,
+            textDecoration: "none",
+          }}
+
+          className="bg-pink-500"
+        >
+          + Create Job
         </a>
+        </div>
       </div>
 
       {!data?.ok && (
@@ -47,7 +62,7 @@ export default async function JobsPage() {
       )}
 
       <div className="mt-6 overflow-hidden rounded-xl border">
-        <div className="grid grid-cols-12 gap-0 bg-gray-50 px-4 py-3 text-xs font-semibold text-gray-600">
+        <div className="grid grid-cols-12 gap-0 px-4 py-3 text-xs font-semibold text-gray-600">
           <div className="col-span-4">Job</div>
           <div className="col-span-2">Status</div>
           <div className="col-span-2">Inputs</div>
@@ -62,7 +77,7 @@ export default async function JobsPage() {
             <a
               key={j.jobId}
               href={`/jobs/${encodeURIComponent(j.jobId)}`}
-              className="grid grid-cols-12 gap-0 px-4 py-3 text-sm hover:bg-gray-50 border-t"
+              className="grid grid-cols-12 gap-0 px-4 py-3 text-sm border-t"
             >
               <div className="col-span-4 font-semibold">{j.jobId}</div>
               <div className="col-span-2"><StatusPill status={j.status} /></div>

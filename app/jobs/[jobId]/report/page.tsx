@@ -12,7 +12,7 @@ export default async function JobReport({
 
   if (!res.ok) {
     return (
-      <main className="p-8">
+      <main className="">
         <a
           href={`/jobs/${jobId}`}
           className="text-sm text-blue-600 hover:underline"
@@ -27,7 +27,7 @@ export default async function JobReport({
   const text = await res.text();
 
   return (
-    <main className="p-8">
+    <main className="">
       <a
         href={`/jobs/${jobId}`}
         className="text-sm text-blue-600 hover:underline"

@@ -1,0 +1,304 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+
+type PromptListItem = {
+  promptId: string;
+  key: string;
+  name: string;
+  description?: string;
+  version?: number | null;
+  model?: string | null;
+  isActive?: boolean;
+  isDeleted?: boolean;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+};
+
+export default function PromptsPage() {
+  const [rows, setRows] = useState<PromptListItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const [keyFilter, setKeyFilter] = useState("");
+  const [activeOnly, setActiveOnly] = useState(false);
+  const [includeDeleted, setIncludeDeleted] = useState(false);
+  const [limit, setLimit] = useState("200");
+
+  const apiBase = useMemo(() => {
+    // If Node API is separate, set NEXT_PUBLIC_API_BASE_URL in .env.local
+    return process.env.NEXT_PUBLIC_API_BASE_URL?.trim() || "";
+  }, []);
+
+  function buildUrl() {
+    const params = new URLSearchParams();
+    params.set("limit", String(Math.min(Math.max(parseInt(limit || "200", 10) || 200, 1), 500)));
+    if (keyFilter.trim()) params.set("key", keyFilter.trim());
+    if (activeOnly) params.set("activeOnly", "true");
+    if (includeDeleted) params.set("includeDeleted", "true");
+    return `${apiBase}/api/prompts?${params.toString()}`;
+  }
+
+  async function load() {
+    setLoading(true);
+    setError("");
+
+    try {
+      const url = buildUrl();
+      const res = await fetch(url, { method: "GET" });
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        setError(data?.error || `Request failed (HTTP ${res.status})`);
+        setRows([]);
+        return;
+      }
+
+      setRows(Array.isArray(data?.prompts) ? data.prompts : []);
+    } catch (e: any) {
+      setError(e?.message || String(e));
+      setRows([]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 16 }}>
+        <div>
+          <h1 className="text-2xl font-bold">Prompts</h1>
+          <p style={{ marginTop: 6, color: "#666" }}>
+            Listing from <code>GET /api/prompts</code>
+          </p>
+        </div>
+        <div>
+        <a
+          href="/admin/prompts/new"
+          style={{
+            padding: "10px 12px",
+            borderRadius: 12,
+            border: "1px solid #111",
+            color: "#fff",
+            fontWeight: 700,
+            textDecoration: "none",
+          }}
+
+          className="bg-pink-500 pointer"
+        >
+          + Create Prompt
+        </a>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div
+        style={{
+          marginTop: 18,
+          padding: 14,
+          border: "1px solid #eee",
+          borderRadius: 14,
+          display: "grid",
+          gap: 12,
+        }}
+      >
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 180px", gap: 12 }}>
+          <div style={{ display: "grid", gap: 6 }}>
+            <label style={{ fontWeight: 700 }}>Key filter</label>
+            <input
+              value={keyFilter}
+              onChange={(e) => setKeyFilter(e.target.value)}
+              placeholder="e.g. visible_uv_report"
+              style={inputStyle}
+            />
+          </div>
+
+          <div style={{ display: "grid", gap: 6 }}>
+            <label style={{ fontWeight: 700 }}>Limit</label>
+            <input value={limit} onChange={(e) => setLimit(e.target.value)} style={inputStyle} />
+          </div>
+        </div>
+
+        <div style={{ display: "flex", gap: 18, alignItems: "center", flexWrap: "wrap" }}>
+          <label style={checkLabelStyle}>
+            <input type="checkbox" checked={activeOnly} onChange={(e) => setActiveOnly(e.target.checked)} />
+            Active only
+          </label>
+
+          <label style={checkLabelStyle}>
+            <input
+              type="checkbox"
+              checked={includeDeleted}
+              onChange={(e) => setIncludeDeleted(e.target.checked)}
+            />
+            Include deleted
+          </label>
+
+          <button onClick={load} disabled={loading} style={buttonStyle}>
+            {loading ? "Loading..." : "Refresh"}
+          </button>
+
+          <div style={{ color: "#666", fontSize: 13 }}>
+            Showing <b>{rows.length}</b> prompts
+          </div>
+        </div>
+
+        {error ? (
+          <div style={{ background: "#ffe8e8", border: "1px solid #ffb3b3", padding: 12, borderRadius: 10 }}>
+            <b style={{ color: "#a40000" }}>Error:</b> {error}
+          </div>
+        ) : null}
+      </div>
+
+      {/* Table */}
+      <div style={{ marginTop: 16, border: "1px solid #eee", borderRadius: 14, overflow: "hidden" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
+        <thead>
+            <tr style={{ background: "#" }}>
+            <Th>Key</Th>
+            <Th>Name</Th>
+            <Th>Version</Th>
+            <Th>Model</Th>
+            <Th>Status</Th>
+            <Th>Updated</Th>
+            <Th>Actions</Th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {rows.length === 0 ? (
+            <tr>
+                <td colSpan={7} style={{ padding: 16, color: "#666" }}>
+                {loading ? "Loading..." : "No prompts found."}
+                </td>
+            </tr>
+            ) : (
+            rows.map((p) => (
+                <tr key={p.promptId} style={{ borderTop: "1px solid #eee" }}>
+                <Td>
+                    <div style={{ fontWeight: 800 }}>{p.key || "-"}</div>
+                    <div style={{ color: "#666", fontSize: 12, marginTop: 2 }}>{p.promptId}</div>
+                </Td>
+
+                <Td>
+                    <div style={{ fontWeight: 700 }}>{p.name || "-"}</div>
+                    {p.description ? (
+                    <div style={{ color: "#666", fontSize: 13 }}>{p.description}</div>
+                    ) : null}
+                </Td>
+
+                <Td>{p.version ?? "-"}</Td>
+                <Td>{p.model ?? "-"}</Td>
+
+                <Td>
+                    <StatusPill active={!!p.isActive} deleted={!!p.isDeleted} />
+                </Td>
+
+                <Td>
+                    <div>{fmtDate(p.updatedAt)}</div>
+                    <div style={{ color: "#666", fontSize: 12 }}>
+                    created {fmtDate(p.createdAt)}
+                    </div>
+                </Td>
+
+                <Td>
+                    <a
+                    href={`/admin/prompts/${encodeURIComponent(p.promptId)}`}
+                    style={{
+                      padding: "12px 14px",
+                      borderRadius: 12,
+                      border: "1px solid #111",
+                      color: "#fff",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                    }}
+                    className="bg-blue-500"
+                    >
+                    View
+                    </a>
+                </Td>
+                </tr>
+            ))
+            )}
+        </tbody>
+        </table>
+
+      </div>
+    </div>
+  );
+}
+
+function StatusPill({ active, deleted }: { active: boolean; deleted: boolean }) {
+  const label = deleted ? "deleted" : active ? "active" : "inactive";
+  const bg = deleted ? "#fff1f1" : active ? "#ecfff1" : "#f3f4f6";
+  const border = deleted ? "#ffb3b3" : active ? "#b9f2c8" : "#e5e7eb";
+  const color = deleted ? "#a40000" : active ? "#116b2a" : "#374151";
+
+  return (
+    <span
+      style={{
+        display: "inline-block",
+        padding: "4px 10px",
+        borderRadius: 999,
+        border: `1px solid ${border}`,
+        background: bg,
+        color,
+        fontWeight: 800,
+        fontSize: 12,
+        textTransform: "uppercase",
+        letterSpacing: 0.4,
+      }}
+    >
+      {label}
+    </span>
+  );
+}
+
+function fmtDate(s?: string | null) {
+  if (!s) return "-";
+  const d = new Date(s);
+  if (Number.isNaN(d.getTime())) return s;
+  return d.toLocaleString();
+}
+
+function Th({ children }: { children: any }) {
+  return (
+    <th style={{ textAlign: "left", padding: "12px 12px", borderBottom: "1px solid #eee", fontWeight: 900 }}>
+      {children}
+    </th>
+  );
+}
+
+function Td({ children }: { children: any }) {
+  return <td style={{ padding: "12px 12px", verticalAlign: "top" }}>{children}</td>;
+}
+
+const inputStyle: React.CSSProperties = {
+  padding: "10px 12px",
+  border: "1px solid #ddd",
+  borderRadius: 12,
+  fontSize: 14,
+  outline: "none",
+};
+
+const buttonStyle: React.CSSProperties = {
+  padding: "10px 12px",
+  borderRadius: 12,
+  border: "1px solid #111",
+  background: "#111",
+  color: "#fff",
+  fontWeight: 800,
+  cursor: "pointer",
+};
+
+const checkLabelStyle: React.CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+  fontWeight: 700,
+};
