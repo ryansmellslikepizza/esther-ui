@@ -9,7 +9,7 @@ export default async function Home() {
   }
 
   return (
-    <main className="p-8 font-sans">
+    <main className="font-sans">
       <h1 className="text-2xl font-bold">Esther UI</h1>
       <p className="mt-2 text-gray-600">API rewrite check:</p>
 
