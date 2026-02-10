@@ -73,9 +73,9 @@ export default function PromptsPage() {
 
   return (
     <main className="font-sans">
-      <div className="flex w-full flex-wrap items-end justify-between gap-4 border-b border-zinc-950/10 pb-6 dark:border-white/10">
+      <div className="flex w-full flex-wrap items-end justify-between gap-4 border- border-zinc-950/10 pb-6 dark:border-white/10">
         <Heading>Prompts</Heading>
-        <div className="flex gap-4">
+        <div className="flex gap-0">
           <Button color="pink" href="/prompts/new">+ Create Prompt</Button>
         </div>
       </div>
@@ -140,7 +140,7 @@ export default function PromptsPage() {
       </div> */}
 
       {/* Table */}
-      <div style={{ marginTop: 16, border: "1px solid #eee", borderRadius: 14, overflow: "hidden" }}>
+      <div style={{ marginTop: 0, border: "1px solid #eee", borderRadius: 14, overflow: "hidden" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
         <thead>
             <tr style={{ background: "#" }}>

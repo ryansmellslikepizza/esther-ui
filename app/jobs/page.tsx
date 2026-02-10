@@ -36,7 +36,7 @@ export default async function JobsPage() {
 
   return (
     <main className="font-sans">
-      <div className="flex w-full flex-wrap items-end justify-between gap-4 border-b border-zinc-950/10 pb-6 dark:border-white/10">
+      <div className="flex w-full flex-wrap items-end justify-between gap-4 border- border-zinc-950/10 pb-6 dark:border-white/10">
         <Heading>Jobs</Heading>
         <div className="flex gap-4">
           <Button color="pink" href="/jobs/new">+ Create Job</Button>
@@ -49,7 +49,7 @@ export default async function JobsPage() {
         </pre>
       )}
 
-      <div className="mt-6 overflow-hidden rounded-xl border">
+      <div className="overflow-hidden rounded-xl border">
         <div className="grid grid-cols-12 gap-0 px-4 py-3 text-xs font-semibold text-gray-600">
           <div className="col-span-4">Job</div>
           <div className="col-span-2">Status</div>

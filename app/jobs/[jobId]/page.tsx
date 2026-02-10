@@ -62,14 +62,14 @@ export default async function JobDetail({
         ← Back
       </a>
 
-      <div className="flex w-full flex-wrap items-end justify-between gap-4 border-b border-zinc-950/10 pb-6 dark:border-white/10 mb-5">
+      <div className="flex w-full flex-wrap items-end justify-between gap-4 border- border-zinc-950/10 pb-6 dark:border-white/10">
         <Heading>{job.jobId}</Heading>
         <div className="flex gap-4 ">
           Status: <StatusPill status={job.status || "unknown"} />
         </div>
       </div>
 
-      <div className="mt-6 grid gap-4">
+      <div className="grid gap-4">
         <div className="rounded-xl border p-4">
           <div className="text-sm font-semibold">Input</div>
           {inputTypes.length === 0 ? (

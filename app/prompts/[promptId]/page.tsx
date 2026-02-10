@@ -12,6 +12,8 @@ type PromptDoc = {
   model?: string | null;
   system?: string;
   userTemplate?: string;
+  userTemplateFull?: string;
+  userTemplateQuick?: string;
   metadata?: any;
   isActive?: boolean;
   isDeleted?: boolean;
@@ -48,6 +50,8 @@ export default function PromptViewerPage({
       if (!res.ok) {
         throw new Error(data?.error || `Request failed (HTTP ${res.status})`);
       }
+
+      console.log(data);
 
       setPrompt(data?.prompt || null);
     } catch (e: any) {
@@ -179,7 +183,8 @@ export default function PromptViewerPage({
           </div>
 
           <Section title="System Prompt" text={prompt.system || ""} />
-          <Section title="User Template" text={prompt.userTemplate || ""} />
+          <Section title="User Template (Quick scan) - 2 images" text={prompt.userTemplateQuick || ""} />
+          <Section title="User Template (Full / 3D scan) - 6 images" text={prompt.userTemplateFull || ""} />
 
           <div style={cardStyle}>
             <div style={{ fontWeight: 900, marginBottom: 8 }}>Metadata</div>

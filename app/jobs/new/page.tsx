@@ -17,6 +17,7 @@ type UploadResp =
       jobInputs: Record<string, string>;
       normalization: { started: boolean; pid?: number };
       promptId?: string | null;
+      scanMode?: "quick" | "full";
     }
   | { ok: false; error: string; [k: string]: any };
 
@@ -27,6 +28,14 @@ type PromptListItem = {
   version?: number | null;
   isActive?: boolean;
   isDeleted?: boolean;
+};
+
+type DropZoneProps = {
+  label: string; // field key (e.g. white_center)
+  help?: string;
+  file: File | null;
+  setFile: (f: File | null) => void;
+  inputRef: React.RefObject<HTMLInputElement | null>;
 };
 
 function makeDefaultCaptureId() {
@@ -40,27 +49,130 @@ function formatBytes(bytes: number) {
   return `${(kb / 1024).toFixed(1)} MB`;
 }
 
+function pickFirstImageFile(dt: DataTransfer | null): File | null {
+  if (!dt) return null;
+  const files = Array.from(dt.files || []);
+  return files.find((f) => f.type?.startsWith("image/")) || null;
+}
+
+function DropZone({ label, help, file, setFile, inputRef }: DropZoneProps) {
+  const [dragging, setDragging] = useState(false);
+
+  return (
+    <div>
+      <div className="text-sm text-gray-400 mb-2">
+        Select a{" "}
+        <span className="font-mono text-gray-100">
+          <b>{label}</b>
+        </span>{" "}
+        image{help ? <span className="text-gray-500"> — {help}</span> : null}
+      </div>
+
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={() => inputRef.current?.click()}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") inputRef.current?.click();
+        }}
+        onDragEnter={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setDragging(true);
+        }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setDragging(true);
+        }}
+        onDragLeave={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setDragging(false);
+        }}
+        onDrop={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setDragging(false);
+          const f = pickFirstImageFile(e.dataTransfer);
+          if (f) setFile(f);
+        }}
+        className={[
+          "rounded-xl border-2 border-dashed p-5 cursor-pointer select-none",
+          "transition-colors",
+          dragging ? "border-indigo-500 bg-indigo-50" : "border-gray-300 hover:border-gray-400",
+        ].join(" ")}
+      >
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <div className="text-sm font-medium">{file ? "File selected" : "Drag & drop an image here"}</div>
+            <div className="text-xs text-gray-500 mt-1">
+              {file ? `${file.name} • ${formatBytes(file.size)}` : "or click to browse (PNG/JPG/WEBP)"}
+            </div>
+          </div>
+
+          {file ? (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setFile(null);
+                if (inputRef.current) inputRef.current.value = "";
+              }}
+              className="rounded-lg border px-3 py-1.5 text-xs hover:bg-gray-50"
+            >
+              Clear
+            </button>
+          ) : null}
+        </div>
+      </div>
+
+      <input
+        ref={inputRef}
+        id={label}
+        name={label}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => setFile(e.target.files?.[0] || null)}
+      />
+    </div>
+  );
+}
+
 export default function NewJobPage() {
   const router = useRouter();
 
   const [captureId, setCaptureId] = useState(makeDefaultCaptureId());
   const [isTest, setIsTest] = useState(true);
 
+  // ✅ scan mode toggle
+  const [isFullScan, setIsFullScan] = useState(false);
+
+  // quick (always required)
   const [whiteCenter, setWhiteCenter] = useState<File | null>(null);
   const [uvCenter, setUvCenter] = useState<File | null>(null);
 
-  const [whiteDragging, setWhiteDragging] = useState(false);
-  const [uvDragging, setUvDragging] = useState(false);
+  // full scan extras
+  const [whiteYawLeft, setWhiteYawLeft] = useState<File | null>(null);
+  const [uvYawLeft, setUvYawLeft] = useState<File | null>(null);
+  const [whiteYawRight, setWhiteYawRight] = useState<File | null>(null);
+  const [uvYawRight, setUvYawRight] = useState<File | null>(null);
 
-  const whiteInputRef = useRef<HTMLInputElement | null>(null);
-  const uvInputRef = useRef<HTMLInputElement | null>(null);
+  const whiteCenterRef = useRef<HTMLInputElement | null>(null);
+  const uvCenterRef = useRef<HTMLInputElement | null>(null);
+
+  const whiteYawLeftRef = useRef<HTMLInputElement | null>(null);
+  const uvYawLeftRef = useRef<HTMLInputElement | null>(null);
+  const whiteYawRightRef = useRef<HTMLInputElement | null>(null);
+  const uvYawRightRef = useRef<HTMLInputElement | null>(null);
 
   // ✅ prompts
   const [prompts, setPrompts] = useState<PromptListItem[]>([]);
   const [promptsLoading, setPromptsLoading] = useState(false);
   const [promptsError, setPromptsError] = useState<string>("");
 
-  // ✅ selected promptId (optional). If empty, server uses default activePromptKey.
+  // ✅ selected promptId (optional)
   const [promptId, setPromptId] = useState<string>("");
 
   const [submitting, setSubmitting] = useState(false);
@@ -74,35 +186,27 @@ export default function NewJobPage() {
       setPromptsLoading(true);
       setPromptsError("");
       try {
-        const res = await fetch("/api/prompts?activeOnly=true&limit=200", { cache: "no-store" });
+        const res = await fetch("/api/prompts?activeOnly=false&limit=200", { cache: "no-store" });
         const data = await res.json().catch(() => null);
 
         if (!res.ok) throw new Error(data?.error || `Failed to load prompts (HTTP ${res.status})`);
 
         const items: PromptListItem[] = Array.isArray(data?.prompts) ? data.prompts : [];
+        const list = items.filter((p) => p && !p.isDeleted);
 
-        // keep only active + non-deleted (defensive)
-        const active = items.filter((p) => p && !p.isDeleted && p.isActive);
-
-        // sort by key/name
-        active.sort(
-          (a, b) =>
-            (a.key || "").localeCompare(b.key || "") || (a.name || "").localeCompare(b.name || "")
+        list.sort(
+          (a, b) => (a.key || "").localeCompare(b.key || "") || (a.name || "").localeCompare(b.name || "")
         );
 
         if (!cancelled) {
-          setPrompts(active);
+          setPrompts(list);
 
-          // Pick a default promptId if none selected yet
           if (!promptId) {
-            const preferred = active.find((p) => p.key === "visible_uv_report") || active[0];
+            const preferred = list.find((p) => p.key === "visible_uv_report") || list[0];
             if (preferred?.promptId) setPromptId(preferred.promptId);
-          } else {
-            // If the currently selected promptId no longer exists, fall back
-            if (active.length > 0 && !active.some((p) => p.promptId === promptId)) {
-              const preferred = active.find((p) => p.key === "visible_uv_report") || active[0];
-              if (preferred?.promptId) setPromptId(preferred.promptId);
-            }
+          } else if (list.length > 0 && !list.some((p) => p.promptId === promptId)) {
+            const preferred = list.find((p) => p.key === "visible_uv_report") || list[0];
+            if (preferred?.promptId) setPromptId(preferred.promptId);
           }
         }
       } catch (e: any) {
@@ -119,9 +223,46 @@ export default function NewJobPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // If they toggle OFF full scan, clear the 4 extra files so we never “mix”
+  useEffect(() => {
+    if (!isFullScan) {
+      setWhiteYawLeft(null);
+      setUvYawLeft(null);
+      setWhiteYawRight(null);
+      setUvYawRight(null);
+      if (whiteYawLeftRef.current) whiteYawLeftRef.current.value = "";
+      if (uvYawLeftRef.current) uvYawLeftRef.current.value = "";
+      if (whiteYawRightRef.current) whiteYawRightRef.current.value = "";
+      if (uvYawRightRef.current) uvYawRightRef.current.value = "";
+    }
+  }, [isFullScan]);
+
+  const scanMode = isFullScan ? "full" : "quick";
+
   const canSubmit = useMemo(() => {
-    return !!captureId.trim() && !!whiteCenter && !!uvCenter && !submitting;
-  }, [captureId, whiteCenter, uvCenter, submitting]);
+    if (!captureId.trim()) return false;
+    if (submitting) return false;
+
+    // quick always required
+    if (!whiteCenter || !uvCenter) return false;
+
+    // if full scan, require all 6
+    if (isFullScan) {
+      if (!whiteYawLeft || !uvYawLeft || !whiteYawRight || !uvYawRight) return false;
+    }
+
+    return true;
+  }, [
+    captureId,
+    submitting,
+    isFullScan,
+    whiteCenter,
+    uvCenter,
+    whiteYawLeft,
+    uvYawLeft,
+    whiteYawRight,
+    uvYawRight,
+  ]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -131,13 +272,33 @@ export default function NewJobPage() {
     if (!whiteCenter) return setResult({ ok: false, error: "white_center image is required" });
     if (!uvCenter) return setResult({ ok: false, error: "uv_center image is required" });
 
+    if (isFullScan) {
+      if (!whiteYawLeft) return setResult({ ok: false, error: "white_yaw_left image is required for full scan" });
+      if (!uvYawLeft) return setResult({ ok: false, error: "uv_yaw_left image is required for full scan" });
+      if (!whiteYawRight) return setResult({ ok: false, error: "white_yaw_right image is required for full scan" });
+      if (!uvYawRight) return setResult({ ok: false, error: "uv_yaw_right image is required for full scan" });
+    }
+
     const fd = new FormData();
     fd.append("capture_id", captureId.trim());
     fd.append("is_test", isTest ? "true" : "false");
+
+    // optional scan hint (backend can also infer from received keys)
+    fd.append("scan_mode", scanMode);
+
+    // quick
     fd.append("white_center", whiteCenter);
     fd.append("uv_center", uvCenter);
 
-    // ✅ pass up promptId (optional). If blank, server uses default activePromptKey.
+    // full extras
+    if (isFullScan) {
+      fd.append("white_yaw_left", whiteYawLeft!);
+      fd.append("uv_yaw_left", uvYawLeft!);
+      fd.append("white_yaw_right", whiteYawRight!);
+      fd.append("uv_yaw_right", uvYawRight!);
+    }
+
+    // optional prompt override
     if (promptId) fd.append("prompt_id", promptId);
 
     setSubmitting(true);
@@ -156,10 +317,16 @@ export default function NewJobPage() {
     }
   }
 
-  function pickFirstImageFile(dt: DataTransfer | null): File | null {
-    if (!dt) return null;
-    const files = Array.from(dt.files || []);
-    return files.find((f) => f.type?.startsWith("image/")) || null;
+  function resetAll() {
+    setCaptureId(makeDefaultCaptureId());
+    setWhiteCenter(null);
+    setUvCenter(null);
+    if (whiteCenterRef.current) whiteCenterRef.current.value = "";
+    if (uvCenterRef.current) uvCenterRef.current.value = "";
+
+    setIsFullScan(false); // triggers clearing the extra 4 via effect
+
+    setResult(null);
   }
 
   return (
@@ -170,7 +337,7 @@ export default function NewJobPage() {
 
       <h1 className="mt-3 text-2xl font-bold">Create Job</h1>
       <p className="mt-2 text-gray-600">
-        Upload required images to create a job (currently: white_center + uv_center).
+        Choose a scan mode and upload the required images. Quick scan = 2 images. Full scan = 6 images.
       </p>
 
       <form onSubmit={onSubmit} className="mt-6 grid gap-6">
@@ -183,10 +350,10 @@ export default function NewJobPage() {
               <Input value={captureId} disabled />
             </Field>
 
-            {/* ✅ Prompt selector (by promptId) */}
+            {/* Prompt selector */}
             <Field>
               <Label>Prompt</Label>
-              <Description>Choose which active prompt to use for analysis.</Description>
+              <Description>Choose which prompt document to use (optional override).</Description>
 
               <div className="flex items-center gap-3">
                 <select
@@ -199,13 +366,14 @@ export default function NewJobPage() {
                     <option value="">
                       {promptsLoading
                         ? "Loading prompts..."
-                        : "No active prompts found (server default will be used)"}
+                        : "No prompts found (server default will be used)"}
                     </option>
                   ) : (
                     prompts.map((p) => (
                       <option key={p.promptId} value={p.promptId}>
                         {p.key} — {p.name || "(no name)"}
                         {typeof p.version === "number" ? ` (v${p.version})` : ""}
+                        {p.isActive ? " ★" : ""}
                       </option>
                     ))
                   )}
@@ -218,26 +386,21 @@ export default function NewJobPage() {
                     setPromptsLoading(true);
                     setPromptsError("");
                     try {
-                      const res = await fetch("/api/prompts?activeOnly=true&limit=200", {
-                        cache: "no-store",
-                      });
+                      const res = await fetch("/api/prompts?activeOnly=false&limit=200", { cache: "no-store" });
                       const data = await res.json().catch(() => null);
-                      if (!res.ok)
-                        throw new Error(data?.error || `Failed to load prompts (HTTP ${res.status})`);
+                      if (!res.ok) throw new Error(data?.error || `Failed to load prompts (HTTP ${res.status})`);
 
                       const items: PromptListItem[] = Array.isArray(data?.prompts) ? data.prompts : [];
-                      const active = items.filter((p) => p && !p.isDeleted && p.isActive);
-                      active.sort(
+                      const list = items.filter((p) => p && !p.isDeleted);
+                      list.sort(
                         (a, b) =>
                           (a.key || "").localeCompare(b.key || "") ||
                           (a.name || "").localeCompare(b.name || "")
                       );
+                      setPrompts(list);
 
-                      setPrompts(active);
-
-                      // keep selection sane
-                      if (active.length > 0 && !active.some((p) => p.promptId === promptId)) {
-                        const preferred = active.find((p) => p.key === "visible_uv_report") || active[0];
+                      if (list.length > 0 && !list.some((p) => p.promptId === promptId)) {
+                        const preferred = list.find((p) => p.key === "visible_uv_report") || list[0];
                         if (preferred?.promptId) setPromptId(preferred.promptId);
                       }
                     } catch (e: any) {
@@ -261,183 +424,88 @@ export default function NewJobPage() {
           </div>
         </div>
 
+           {/* Scan mode toggle */}
+            <div className="rounded-lg border p-3">
+              <div className="text-sm font-semibold">Scan Mode</div>
+              <div className="mt-2 flex items-center gap-2 text-sm">
+                <input
+                  id="fullscan"
+                  type="checkbox"
+                  checked={isFullScan}
+                  onChange={(e) => setIsFullScan(e.target.checked)}
+                />
+                <label htmlFor="fullscan">
+                  Full / 3D scan (6 images).{" "}
+                  <span className="text-gray-500">Uncheck for Quick scan (2 images).</span>
+                </label>
+              </div>
+              <div className="mt-2 text-xs text-gray-500">
+                Current: <span className="font-mono">{scanMode}</span>
+              </div>
+            </div>
+
         <div className="rounded-xl border p-4">
-          <div className="text-sm font-semibold">Images (required)</div>
+          <div className="text-sm font-semibold">Images</div>
+
+          <div className="mt-3 text-xs text-gray-500">
+            Required fields for <span className="font-mono">{scanMode}</span>:{" "}
+            {isFullScan
+              ? "white_center, uv_center, white_yaw_left, uv_yaw_left, white_yaw_right, uv_yaw_right"
+              : "white_center, uv_center"}
+          </div>
 
           <div className="mt-4 grid gap-6">
-            {/* WHITE CENTER */}
-            <div>
-              <div className="text-sm text-gray-400 mb-2">
-                Select a{" "}
-                <span className="font-mono text-gray-100">
-                  <b>white_center</b>
-                </span>{" "}
-                image.
-              </div>
+            <DropZone
+              label="white_center"
+              help="center, visible / white-light"
+              file={whiteCenter}
+              setFile={setWhiteCenter}
+              inputRef={whiteCenterRef}
+            />
 
-              <div
-                role="button"
-                tabIndex={0}
-                onClick={() => whiteInputRef.current?.click()}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") whiteInputRef.current?.click();
-                }}
-                onDragEnter={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setWhiteDragging(true);
-                }}
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setWhiteDragging(true);
-                }}
-                onDragLeave={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setWhiteDragging(false);
-                }}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setWhiteDragging(false);
-                  const f = pickFirstImageFile(e.dataTransfer);
-                  if (f) setWhiteCenter(f);
-                }}
-                className={[
-                  "rounded-xl border-2 border-dashed p-5 cursor-pointer select-none",
-                  "transition-colors",
-                  whiteDragging
-                    ? "border-indigo-500 bg-indigo-50"
-                    : "border-gray-300 hover:border-gray-400",
-                ].join(" ")}
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <div className="text-sm font-medium">
-                      {whiteCenter ? "File selected" : "Drag & drop an image here"}
-                    </div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {whiteCenter
-                        ? `${whiteCenter.name} • ${formatBytes(whiteCenter.size)}`
-                        : "or click to browse (PNG/JPG/WEBP)"}
-                    </div>
-                  </div>
+            <DropZone
+              label="uv_center"
+              help="center, UV / 365nm"
+              file={uvCenter}
+              setFile={setUvCenter}
+              inputRef={uvCenterRef}
+            />
 
-                  {whiteCenter ? (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setWhiteCenter(null);
-                        if (whiteInputRef.current) whiteInputRef.current.value = "";
-                      }}
-                      className="rounded-lg border px-3 py-1.5 text-xs hover:bg-gray-50"
-                    >
-                      Clear
-                    </button>
-                  ) : null}
-                </div>
-              </div>
+            {isFullScan ? (
+              <>
+                <DropZone
+                  label="white_yaw_left"
+                  help="yaw left, visible / white-light"
+                  file={whiteYawLeft}
+                  setFile={setWhiteYawLeft}
+                  inputRef={whiteYawLeftRef}
+                />
 
-              <input
-                ref={whiteInputRef}
-                id="white_center"
-                name="white_center"
-                type="file"
-                accept="image/*"
-                required
-                className="hidden"
-                onChange={(e) => setWhiteCenter(e.target.files?.[0] || null)}
-              />
-            </div>
+                <DropZone
+                  label="uv_yaw_left"
+                  help="yaw left, UV / 365nm"
+                  file={uvYawLeft}
+                  setFile={setUvYawLeft}
+                  inputRef={uvYawLeftRef}
+                />
 
-            {/* UV CENTER */}
-            <div>
-              <div className="text-sm text-gray-400 mb-2">
-                Select a{" "}
-                <span className="font-mono text-gray-100">
-                  <b>uv_center</b>
-                </span>{" "}
-                image.
-              </div>
+                <DropZone
+                  label="white_yaw_right"
+                  help="yaw right, visible / white-light"
+                  file={whiteYawRight}
+                  setFile={setWhiteYawRight}
+                  inputRef={whiteYawRightRef}
+                />
 
-              <div
-                role="button"
-                tabIndex={0}
-                onClick={() => uvInputRef.current?.click()}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") uvInputRef.current?.click();
-                }}
-                onDragEnter={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setUvDragging(true);
-                }}
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setUvDragging(true);
-                }}
-                onDragLeave={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setUvDragging(false);
-                }}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setUvDragging(false);
-                  const f = pickFirstImageFile(e.dataTransfer);
-                  if (f) setUvCenter(f);
-                }}
-                className={[
-                  "rounded-xl border-2 border-dashed p-5 cursor-pointer select-none",
-                  "transition-colors",
-                  uvDragging
-                    ? "border-indigo-500 bg-indigo-50"
-                    : "border-gray-300 hover:border-gray-400",
-                ].join(" ")}
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <div className="text-sm font-medium">
-                      {uvCenter ? "File selected" : "Drag & drop an image here"}
-                    </div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {uvCenter
-                        ? `${uvCenter.name} • ${formatBytes(uvCenter.size)}`
-                        : "or click to browse (PNG/JPG/WEBP)"}
-                    </div>
-                  </div>
-
-                  {uvCenter ? (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setUvCenter(null);
-                        if (uvInputRef.current) uvInputRef.current.value = "";
-                      }}
-                      className="rounded-lg border px-3 py-1.5 text-xs hover:bg-gray-50"
-                    >
-                      Clear
-                    </button>
-                  ) : null}
-                </div>
-              </div>
-
-              <input
-                ref={uvInputRef}
-                id="uv_center"
-                name="uv_center"
-                type="file"
-                accept="image/*"
-                required
-                className="hidden"
-                onChange={(e) => setUvCenter(e.target.files?.[0] || null)}
-              />
-            </div>
+                <DropZone
+                  label="uv_yaw_right"
+                  help="yaw right, UV / 365nm"
+                  file={uvYawRight}
+                  setFile={setUvYawRight}
+                  inputRef={uvYawRightRef}
+                />
+              </>
+            ) : null}
           </div>
         </div>
 
@@ -450,18 +518,7 @@ export default function NewJobPage() {
             {submitting ? "Uploading..." : "Create Job"}
           </button>
 
-          <button
-            type="button"
-            className="rounded-lg border px-4 py-2 text-sm"
-            onClick={() => {
-              setCaptureId(makeDefaultCaptureId());
-              setWhiteCenter(null);
-              setUvCenter(null);
-              if (whiteInputRef.current) whiteInputRef.current.value = "";
-              if (uvInputRef.current) uvInputRef.current.value = "";
-              setResult(null);
-            }}
-          >
+          <button type="button" className="rounded-lg border px-4 py-2 text-sm" onClick={resetAll}>
             Reset
           </button>
         </div>

@@ -1,10 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Description, Field, Label } from '@/components/fieldset'
-import { Textarea } from '@/components/textarea'
-import { Input } from '@/components/input'
-import { Checkbox, CheckboxField, CheckboxGroup } from '@/components/checkbox'
+import { Description, Field, Label } from "@/components/fieldset";
+import { Textarea } from "@/components/textarea";
+import { Input } from "@/components/input";
 
 type CreatePromptBody = {
   key: string;
@@ -12,20 +11,26 @@ type CreatePromptBody = {
   description?: string;
   version?: number;
   model?: string;
-  system?: string;
-  userTemplate?: string;
+
+  system: string;
+  userTemplateQuick?: string;
+  userTemplateFull?: string;
+
   isActive?: boolean;
   metadata?: Record<string, any>;
 };
 
 export default function NewPromptPage() {
   const [key, setKey] = useState("visible_uv_report");
-    const [name, setName] = useState("Visible + UV Skin Report v1");
+  const [name, setName] = useState("Visible + UV Skin Report v1");
   const [description, setDescription] = useState("");
   const [version, setVersion] = useState<string>("1");
-  const [model, setModel] = useState("gpt-5.2");
+  const [model] = useState("gpt-5.2");
+
   const [system, setSystem] = useState("");
-  const [userTemplate, setUserTemplate] = useState("");
+  const [userTemplateQuick, setUserTemplateQuick] = useState("");
+  const [userTemplateFull, setUserTemplateFull] = useState("");
+
   const [isActive, setIsActive] = useState(true);
   const [metadataJson, setMetadataJson] = useState<string>('{"tags":["skin analysis","report"]}');
 
@@ -36,9 +41,15 @@ export default function NewPromptPage() {
   const canSubmit = useMemo(() => {
     const k = key.trim();
     if (!k) return false;
-    if (!system.trim() && !userTemplate.trim()) return false;
+
+    // ✅ for the new schema: system is required
+    if (!system.trim()) return false;
+
+    // ✅ require at least one of the templates
+    if (!userTemplateQuick.trim() && !userTemplateFull.trim()) return false;
+
     return true;
-  }, [key, system, userTemplate]);
+  }, [key, system, userTemplateQuick, userTemplateFull]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -50,8 +61,11 @@ export default function NewPromptPage() {
       name: name.trim() || undefined,
       description: description.trim() || undefined,
       model: model.trim() || undefined,
+
       system: system || "",
-      userTemplate: userTemplate || "",
+      userTemplateQuick: userTemplateQuick || "",
+      userTemplateFull: userTemplateFull || "",
+
       isActive,
     };
 
@@ -98,7 +112,7 @@ export default function NewPromptPage() {
       <a className="text-sm text-blue-600 hover:underline mb-3" href="/prompts">
         ← Back
       </a>
-      
+
       <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8 }}>Create Prompt</h1>
       <p style={{ marginTop: 0, color: "#666", marginBottom: 24 }}>
         Creates a prompt in Mongo via <code>POST /api/prompts</code>.
@@ -124,7 +138,7 @@ export default function NewPromptPage() {
           <div style={{ display: "grid", gap: 6 }}>
             <Field>
               <Label>Model</Label>
-              <Input value={model} onChange={(e) => setModel(e.target.value)} disabled style={textareaStyle} />
+              <Input value={model} disabled style={textareaStyle} />
             </Field>
           </div>
         </div>
@@ -133,10 +147,11 @@ export default function NewPromptPage() {
           <div style={{ display: "grid", gap: 6 }}>
             <Field>
               <Label>Version (optional)</Label>
-              <Input value={version}
-              onChange={(e) => setVersion(e.target.value)}
-              placeholder="1" 
-              style={textareaStyle}
+              <Input
+                value={version}
+                onChange={(e) => setVersion(e.target.value)}
+                placeholder="1"
+                style={textareaStyle}
               />
             </Field>
           </div>
@@ -156,59 +171,59 @@ export default function NewPromptPage() {
 
         <div style={{ display: "grid", gap: 6 }}>
           <Field>
-              <Label>Description</Label>
-              <Input 
+            <Label>Description</Label>
+            <Input
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Optional note for the admin panel"
               style={textareaStyle}
-              />
+            />
           </Field>
         </div>
 
         <div style={{ display: "grid", gap: 6 }}>
-          
-        <Field>
-          <Label>Description</Label>
-          <Textarea
-            value={system}
-            onChange={(e) => setSystem(e.target.value)}
-            placeholder="Paste the system prompt here..."
-            rows={14}
-            style={textareaStyle}
-          />
-        </Field>
-
+          <Field>
+            <Label>System Prompt *</Label>
+            <Textarea
+              value={system}
+              onChange={(e) => setSystem(e.target.value)}
+              placeholder="Paste the system prompt here..."
+              rows={14}
+              style={textareaStyle}
+            />
+          </Field>
         </div>
 
         <div style={{ display: "grid", gap: 6 }}>
-    
-
-        <Field>
-          <Label>User Template 1 quick scan (If 2 images were uploaded)</Label>
-          <Textarea
-            value={userTemplate}
-            onChange={(e) => setUserTemplate(e.target.value)}
-            placeholder='Optional. Example: "Image list:\n{{imageIndexLines}}"'
-            rows={8}
-            style={textareaStyle}
-          />
-        </Field>
+          <Field>
+            <Label>User Template (Quick scan) - 2 images</Label>
+            <Description>
+              Used when upload set is exactly: <code>white_center</code> + <code>uv_center</code>.
+            </Description>
+            <Textarea
+              value={userTemplateQuick}
+              onChange={(e) => setUserTemplateQuick(e.target.value)}
+              placeholder='Example: "Here are the two photos... Produce the report now."'
+              rows={8}
+              style={textareaStyle}
+            />
+          </Field>
         </div>
 
         <div style={{ display: "grid", gap: 6 }}>
-    
-
-        <Field>
-          <Label>User Template 2 for 3d scan. (If 6 images were uploaded)</Label>
-          <Textarea
-            value={userTemplate}
-            onChange={(e) => setUserTemplate(e.target.value)}
-            placeholder='Optional. Example: "Image list:\n{{imageIndexLines}}"'
-            rows={8}
-            style={textareaStyle}
-          />
-        </Field>
+          <Field>
+            <Label>User Template (Full / 3D scan) - 6 images</Label>
+            <Description>
+              Used when upload set includes center + yaw left + yaw right (visible + UV).
+            </Description>
+            <Textarea
+              value={userTemplateFull}
+              onChange={(e) => setUserTemplateFull(e.target.value)}
+              placeholder='Example: "Here are the six photos... Produce the report now."'
+              rows={8}
+              style={textareaStyle}
+            />
+          </Field>
         </div>
 
         <div style={{ display: "grid", gap: 6 }}>
@@ -244,20 +259,13 @@ export default function NewPromptPage() {
         </button>
 
         <small style={{ color: "#666" }}>
-          *Validation: requires <code>key</code> and at least one of <code>system</code> or <code>userTemplate</code>.
+          *Validation: requires <code>key</code>, <code>system</code>, and at least one of{" "}
+          <code>userTemplateQuick</code> / <code>userTemplateFull</code>.
         </small>
       </form>
     </div>
   );
 }
-
-const inputStyle: React.CSSProperties = {
-  padding: "10px 12px",
-  border: "1px solid #ddd",
-  borderRadius: 10,
-  fontSize: 14,
-  outline: "none",
-};
 
 const textareaStyle: React.CSSProperties = {
   fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",

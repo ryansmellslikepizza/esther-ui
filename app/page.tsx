@@ -1,3 +1,6 @@
+
+import { Heading } from '@/components/heading'
+
 export default async function Home() {
   let apiCheck: any = null;
 
@@ -10,10 +13,11 @@ export default async function Home() {
 
   return (
     <main className="font-sans">
-      <h1 className="text-2xl font-bold">Esther UI</h1>
-      <p className="mt-2 text-gray-600">API rewrite check:</p>
-
-      <pre className="mt-4 rounded-xl border p-4 text-sm">
+      <div className="flex w-full flex-wrap items-end justify-between gap-4 border- border-zinc-950/10 pb-6 dark:border-white/10">
+        <Heading>Esther AI</Heading>
+      </div>
+      <p className=" text-gray-600">API health check:</p>
+      <pre className="mt-4 rounded-xl p-4 text-sm">
         {JSON.stringify(apiCheck, null, 2)}
       </pre>
     </main>
