@@ -41,7 +41,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 <Link href="/jobs">Jobs</Link>
               </SidebarItem>
               <SidebarItem>
-                <Link href="/admin/prompts">Prompts</Link>
+                <Link href="/prompts">Prompts</Link>
               </SidebarItem>
             </SidebarSection>
           </SidebarBody>

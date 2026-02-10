@@ -113,7 +113,7 @@ export default function PromptViewerPage({
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 16 }}>
         <div>
-          <a className="text-sm text-blue-600 hover:underline mb-8" href="/admin/prompts">
+          <a className="text-sm text-blue-600 hover:underline mb-8" href="/prompts">
             ← Back to Prompts
           </a>
           <br />

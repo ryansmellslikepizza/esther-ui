@@ -95,7 +95,7 @@ export default function NewPromptPage() {
 
   return (
     <div>
-      <a className="text-sm text-blue-600 hover:underline mb-3" href="/admin/prompts">
+      <a className="text-sm text-blue-600 hover:underline mb-3" href="/prompts">
         ← Back
       </a>
       

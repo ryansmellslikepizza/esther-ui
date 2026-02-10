@@ -210,7 +210,7 @@ export default async function JobDetail({
                 <span className="text-gray-500">prompt used:</span>{" "}
                 <a
                   className="text-blue-600 hover:underline font-mono"
-                  href={`/admin/prompts/${encodeURIComponent(job.analysis.promptId)}`}
+                  href={`/prompts/${encodeURIComponent(job.analysis.promptId)}`}
                 >
                   {job.analysis.promptId}
                 </a>

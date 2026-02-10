@@ -76,7 +76,7 @@ export default function PromptsPage() {
       <div className="flex w-full flex-wrap items-end justify-between gap-4 border-b border-zinc-950/10 pb-6 dark:border-white/10">
         <Heading>Prompts</Heading>
         <div className="flex gap-4">
-          <Button color="pink" href="/admin/prompts/new">+ Create Prompt</Button>
+          <Button color="pink" href="/prompts/new">+ Create Prompt</Button>
         </div>
       </div>
 
@@ -205,7 +205,7 @@ export default function PromptsPage() {
                 <Td>
                     <Button 
                     className="mt-0.5"
-                    href={`/admin/prompts/${encodeURIComponent(p.promptId)}`}
+                    href={`/prompts/${encodeURIComponent(p.promptId)}`}
                     color="blue">View</Button>
                 </Td>
                 </tr>
