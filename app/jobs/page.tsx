@@ -25,7 +25,7 @@ function StatusPill({ status }: { status: string }) {
   else if (s.includes("done") || s.includes("complete")) cls = "green";
   else if (s.includes("upload")) cls = "yellow";
 
-  return <Badge color={cls}>{status}</Badge>;
+  return <Badge color={cls as any}>{status}</Badge>;
 }
 
 export default async function JobsPage() {

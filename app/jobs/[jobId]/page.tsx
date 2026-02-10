@@ -14,7 +14,7 @@ function StatusPill({ status }: { status: string }) {
   else if (s.includes("done") || s.includes("complete")) cls = "green";
   else if (s.includes("upload")) cls = "yellow";
 
-  return <Badge color={cls}>{status}</Badge>;
+  return <Badge color={cls as any}>{status}</Badge>;
 }
 
 export default async function JobDetail({
@@ -65,7 +65,7 @@ export default async function JobDetail({
       <div className="flex w-full flex-wrap items-end justify-between gap-4 border-b border-zinc-950/10 pb-6 dark:border-white/10 mb-5">
         <Heading>{job.jobId}</Heading>
         <div className="flex gap-4 ">
-          Status: <StatusPill className="" status={job.status || "unknown"} />
+          Status: <StatusPill status={job.status || "unknown"} />
         </div>
       </div>
 
@@ -190,7 +190,7 @@ export default async function JobDetail({
 
     <div className="mt-6 mb-5">
       <p className="mt-2 text-gray-600 mb-5">
-        Status: <StatusPill className="" status={job.status || "unknown"} />
+        Status: <StatusPill status={job.status || "unknown"} />
       </p>
 
       {job.status === "analysis_done" && (

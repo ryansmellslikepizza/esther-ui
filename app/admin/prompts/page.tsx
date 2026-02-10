@@ -232,7 +232,7 @@ function StatusPill({ active, deleted }: { active: boolean; deleted: boolean }) 
   else if (s.includes("done") || s.includes("complete")) cls = "green";
   else if (s.includes("upload")) cls = "yellow";
 
-  return <Badge color={color}>{label}</Badge>;
+  return <Badge color={color as any}>{label}</Badge>;
 }
 
 function fmtDate(s?: string | null) {

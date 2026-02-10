@@ -4,7 +4,7 @@ import { Button } from "@/components/button";
 
 export default function Page() {
   return (
-    <div className="">
+    <div>
       <Button>It works</Button>
     </div>
   );

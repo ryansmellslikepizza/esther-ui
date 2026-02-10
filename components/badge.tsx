@@ -69,13 +69,13 @@ export const BadgeButton = forwardRef(function BadgeButton(
   return typeof props.href === 'string' ? (
     <Link {...props} className={classes} ref={ref as React.ForwardedRef<HTMLAnchorElement>}>
       <TouchTarget>
-        <Badge color={color}>{children}</Badge>
+        <Badge color={color as any}>{children}</Badge>
       </TouchTarget>
     </Link>
   ) : (
     <Headless.Button {...props} className={classes} ref={ref}>
       <TouchTarget>
-        <Badge color={color}>{children}</Badge>
+        <Badge color={color as any}>{children}</Badge>
       </TouchTarget>
     </Headless.Button>
   )
