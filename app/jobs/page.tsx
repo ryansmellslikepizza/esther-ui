@@ -37,7 +37,7 @@ export default async function JobsPage() {
   return (
     <main className="font-sans">
       <div className="flex w-full flex-wrap items-end justify-between gap-4 border-b border-zinc-950/10 pb-6 dark:border-white/10">
-        <Heading level="1">Jobs</Heading>
+        <Heading>Jobs</Heading>
         <div className="flex gap-4">
           <Button color="pink" href="/jobs/new">+ Create Job</Button>
         </div>

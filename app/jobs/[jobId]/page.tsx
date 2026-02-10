@@ -63,7 +63,7 @@ export default async function JobDetail({
       </a>
 
       <div className="flex w-full flex-wrap items-end justify-between gap-4 border-b border-zinc-950/10 pb-6 dark:border-white/10 mb-5">
-        <Heading level="1">{job.jobId}</Heading>
+        <Heading>{job.jobId}</Heading>
         <div className="flex gap-4 ">
           Status: <StatusPill className="" status={job.status || "unknown"} />
         </div>
