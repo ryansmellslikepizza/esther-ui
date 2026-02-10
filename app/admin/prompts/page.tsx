@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { Badge } from '@/components/badge'
+import { Button } from '@/components/button'
+import { Heading } from '@/components/heading'
 
 type PromptListItem = {
   promptId: string;
@@ -69,37 +72,18 @@ export default function PromptsPage() {
   }, []);
 
   return (
-    <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 16 }}>
-        <div>
-          <h1 className="text-2xl font-bold">Prompts</h1>
-          <p style={{ marginTop: 6, color: "#666" }}>
-            Listing from <code>GET /api/prompts</code>
-          </p>
-        </div>
-        <div>
-        <a
-          href="/admin/prompts/new"
-          style={{
-            padding: "10px 12px",
-            borderRadius: 12,
-            border: "1px solid #111",
-            color: "#fff",
-            fontWeight: 700,
-            textDecoration: "none",
-          }}
-
-          className="bg-pink-500 pointer"
-        >
-          + Create Prompt
-        </a>
+    <main className="font-sans">
+      <div className="flex w-full flex-wrap items-end justify-between gap-4 border-b border-zinc-950/10 pb-6 dark:border-white/10">
+        <Heading level="1">Prompts</Heading>
+        <div className="flex gap-4">
+          <Button color="pink" href="/admin/prompts/new">+ Create Prompt</Button>
         </div>
       </div>
 
       {/* Filters */}
-      <div
+      {/* <div
+        className="mt-6"
         style={{
-          marginTop: 18,
           padding: 14,
           border: "1px solid #eee",
           borderRadius: 14,
@@ -153,7 +137,7 @@ export default function PromptsPage() {
             <b style={{ color: "#a40000" }}>Error:</b> {error}
           </div>
         ) : null}
-      </div>
+      </div> */}
 
       {/* Table */}
       <div style={{ marginTop: 16, border: "1px solid #eee", borderRadius: 14, overflow: "hidden" }}>
@@ -186,17 +170,29 @@ export default function PromptsPage() {
                 </Td>
 
                 <Td>
+                  <div className="mt-2">
                     <div style={{ fontWeight: 700 }}>{p.name || "-"}</div>
                     {p.description ? (
                     <div style={{ color: "#666", fontSize: 13 }}>{p.description}</div>
                     ) : null}
+                  </div>
                 </Td>
 
-                <Td>{p.version ?? "-"}</Td>
-                <Td>{p.model ?? "-"}</Td>
+                <Td>
+                  <div className="mt-2">
+                    {p.version ?? "-"}
+                  </div>
+                </Td>
+                <Td>
+                  <div className="mt-2">
+                  {p.model ?? "-"}
+                  </div>
+                </Td>
 
                 <Td>
-                    <StatusPill active={!!p.isActive} deleted={!!p.isDeleted} />
+                    <div className="mt-2">
+                      <StatusPill active={!!p.isActive} deleted={!!p.isDeleted} />
+                    </div>
                 </Td>
 
                 <Td>
@@ -207,20 +203,10 @@ export default function PromptsPage() {
                 </Td>
 
                 <Td>
-                    <a
+                    <Button 
+                    className="mt-0.5"
                     href={`/admin/prompts/${encodeURIComponent(p.promptId)}`}
-                    style={{
-                      padding: "12px 14px",
-                      borderRadius: 12,
-                      border: "1px solid #111",
-                      color: "#fff",
-                      fontWeight: 700,
-                      cursor: "pointer",
-                    }}
-                    className="bg-blue-500"
-                    >
-                    View
-                    </a>
+                    color="blue">View</Button>
                 </Td>
                 </tr>
             ))
@@ -229,34 +215,24 @@ export default function PromptsPage() {
         </table>
 
       </div>
-    </div>
+    </main>
   );
 }
 
 function StatusPill({ active, deleted }: { active: boolean; deleted: boolean }) {
   const label = deleted ? "deleted" : active ? "active" : "inactive";
-  const bg = deleted ? "#fff1f1" : active ? "#ecfff1" : "#f3f4f6";
-  const border = deleted ? "#ffb3b3" : active ? "#b9f2c8" : "#e5e7eb";
-  const color = deleted ? "#a40000" : active ? "#116b2a" : "#374151";
+  const base = "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold border";
+  const s = (status || "unknown").toLowerCase();
+  const color = deleted ? "red" : active ? "green" : "zinc";
 
-  return (
-    <span
-      style={{
-        display: "inline-block",
-        padding: "4px 10px",
-        borderRadius: 999,
-        border: `1px solid ${border}`,
-        background: bg,
-        color,
-        fontWeight: 800,
-        fontSize: 12,
-        textTransform: "uppercase",
-        letterSpacing: 0.4,
-      }}
-    >
-      {label}
-    </span>
-  );
+  let cls = "zinc";
+  if (s.includes("fail")) cls = "red";
+  else if (s.includes("analy")) cls = "blue";
+  else if (s.includes("normal")) cls = "purple";
+  else if (s.includes("done") || s.includes("complete")) cls = "green";
+  else if (s.includes("upload")) cls = "yellow";
+
+  return <Badge color={color}>{label}</Badge>;
 }
 
 function fmtDate(s?: string | null) {

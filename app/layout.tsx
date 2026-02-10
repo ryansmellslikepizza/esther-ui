@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import AppShell from "@/components/AppShell";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,39 +20,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <div style={{ maxWidth: 1400, margin: "0 auto", padding: 24 }}>
-          <a
-            href="/"
-            style={buttonStyle}
-            className=""
-          >
-            Home
-          </a>
-          <a
-            href="/jobs"
-            style={buttonStyle}
-            className=""
-          >
-            Jobs
-          </a>
-          <a
-            href="/admin/prompts"
-            style={buttonStyle}
-          >
-            Prompts
-          </a>
-        </div>
-        <div style={{ maxWidth: 1400, margin: "0 auto", padding: 24 }}>
-        {children}
-        </div>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );

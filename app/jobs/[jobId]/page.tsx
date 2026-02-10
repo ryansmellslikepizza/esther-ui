@@ -1,3 +1,22 @@
+import { Heading } from '@/components/heading'
+import { Button } from '@/components/button'
+import { Badge } from '@/components/badge'
+import { Divider } from '@/components/divider'
+
+function StatusPill({ status }: { status: string }) {
+  const base = "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold border";
+  const s = (status || "unknown").toLowerCase();
+
+  let cls = "zinc";
+  if (s.includes("fail")) cls = "red";
+  else if (s.includes("analy")) cls = "blue";
+  else if (s.includes("normal")) cls = "purple";
+  else if (s.includes("done") || s.includes("complete")) cls = "green";
+  else if (s.includes("upload")) cls = "yellow";
+
+  return <Badge color={cls}>{status}</Badge>;
+}
+
 export default async function JobDetail({
   params,
 }: {
@@ -43,8 +62,12 @@ export default async function JobDetail({
         ← Back
       </a>
 
-      <h1 className="mt-3 text-2xl font-bold">{job.jobId}</h1>
-      <p className="mt-2 text-gray-400">Status: {job.status || "unknown"}</p>
+      <div className="flex w-full flex-wrap items-end justify-between gap-4 border-b border-zinc-950/10 pb-6 dark:border-white/10 mb-5">
+        <Heading level="1">{job.jobId}</Heading>
+        <div className="flex gap-4 ">
+          Status: <StatusPill className="" status={job.status || "unknown"} />
+        </div>
+      </div>
 
       <div className="mt-6 grid gap-4">
         <div className="rounded-xl border p-4">
@@ -165,16 +188,18 @@ export default async function JobDetail({
   <div className="rounded-xl border p-4">
     <div className="text-sm font-semibold">Analysis</div>
 
-    <div className="mt-6">
-      <p className="mt-2 text-gray-600">Status: {job.status || "unknown"}</p>
+    <div className="mt-6 mb-5">
+      <p className="mt-2 text-gray-600 mb-5">
+        Status: <StatusPill className="" status={job.status || "unknown"} />
+      </p>
 
       {job.status === "analysis_done" && (
-          <a className="text-blue-600 hover:underline" href={`/jobs/${jobId}/report`}>
-            View Image Analysis Report
-          </a>
+        <Button className="mb-6" href={`/jobs/${jobId}/report`} color="blue">View Image Analysis Report</Button>
       )}
           
+      <Divider />
     </div>
+
 
     {job.analysis ? (
       <div className="mt-3 grid gap-4">
@@ -214,6 +239,8 @@ export default async function JobDetail({
           </div>
         </div>
 
+        <Divider />
+
         {/* Image URLs (clickable) */}
         {Array.isArray(job.analysis.imageUrls) && job.analysis.imageUrls.length > 0 ? (
           <div>
@@ -244,6 +271,8 @@ export default async function JobDetail({
           <div className="text-sm text-gray-500">No analysis.imageUrls found.</div>
         )}
 
+        <Divider />
+
         {/* OpenAI Request Snapshot */}
         {job.analysis.openaiRequest ? (
           <div>
@@ -262,7 +291,7 @@ export default async function JobDetail({
 
             </div>
 
-            <pre className="mt-3 text-xs rounded-lg border p-3 bg-black/[0.02] overflow-auto">
+            <pre className="mt-3 text-xs rounded-xl p-5 bg-black/[0.02] overflow-auto">
               {JSON.stringify(job.analysis.openaiRequest, null, 2)}
             </pre>
           </div>
@@ -270,10 +299,12 @@ export default async function JobDetail({
           <div className="text-sm text-gray-500">No analysis.openaiRequest found.</div>
         )}
 
+        <Divider />
+
         {job.analysis ? (
           <div>
             <div className="text-xs font-semibold text-gray-500 mb-2">Analysis Data Dump</div>
-            <pre className="mt-3 text-xs rounded-lg border p-3 bg-black/[0.02] overflow-auto">
+            <pre className="mt-3 text-xs rounded-xl p-5 bg-black/[0.02] overflow-auto">
               {JSON.stringify(job.analysis, null, 2)}
             </pre>
           </div>
@@ -289,12 +320,12 @@ export default async function JobDetail({
   {/* Events */}
   <div className="rounded-xl border p-4">
     <div className="text-sm font-semibold">Events</div>
-    <pre className="mt-2 text-xs">{JSON.stringify(job.events || [], null, 2)}</pre>
+    <pre className="mt-2 text-xs rounded-xl p-5">{JSON.stringify(job.events || [], null, 2)}</pre>
   </div>
 
   <div className="rounded-xl border p-4">
     <div className="text-sm font-semibold">Error</div>
-    <pre className="mt-2 text-xs">{JSON.stringify(job.error || null, null, 2)}</pre>
+    <pre className="mt-2 text-xs rounded-xl p-5">{JSON.stringify(job.error || null, null, 2)}</pre>
   </div>
 </div>
 

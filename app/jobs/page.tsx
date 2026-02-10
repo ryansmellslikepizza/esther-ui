@@ -1,3 +1,8 @@
+
+import { Badge } from '@/components/badge'
+import { Button } from '@/components/button'
+import { Heading } from '@/components/heading'
+
 type JobRow = {
   jobId: string;
   status: string;
@@ -8,18 +13,19 @@ type JobRow = {
   error: any;
 };
 
+
 function StatusPill({ status }: { status: string }) {
   const base = "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold border";
   const s = (status || "unknown").toLowerCase();
 
-  let cls = "border-gray-300 text-gray-700 bg-white";
-  if (s.includes("fail")) cls = "border-red-300 text-red-700 bg-red-50";
-  else if (s.includes("analy")) cls = "border-blue-300 text-blue-700";
-  else if (s.includes("normal")) cls = "border-purple-300 text-purple-700 bg-purple-50";
-  else if (s.includes("done") || s.includes("complete")) cls = "border-green-300 text-green-700 bg-green-50";
-  else if (s.includes("upload")) cls = "border-yellow-300 text-yellow-800 bg-yellow-50";
+  let cls = "zinc";
+  if (s.includes("fail")) cls = "red";
+  else if (s.includes("analy")) cls = "blue";
+  else if (s.includes("normal")) cls = "purple";
+  else if (s.includes("done") || s.includes("complete")) cls = "green";
+  else if (s.includes("upload")) cls = "yellow";
 
-  return <span className={`${base} ${cls}`}>{status}</span>;
+  return <Badge color={cls}>{status}</Badge>;
 }
 
 export default async function JobsPage() {
@@ -30,28 +36,10 @@ export default async function JobsPage() {
 
   return (
     <main className="font-sans">
-      <div className="flex items-end justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Jobs</h1>
-          <p className="mt-2 text-gray-600">Latest jobs from DB</p>
-        </div>
-        <div>
-        <a
-          href="/jobs/new"
-          style={{
-            padding: "10px 12px",
-            marginLeft: "20px",
-            borderRadius: 12,
-            border: "1px solid #111",
-            color: "#fff",
-            fontWeight: 700,
-            textDecoration: "none",
-          }}
-
-          className="bg-pink-500"
-        >
-          + Create Job
-        </a>
+      <div className="flex w-full flex-wrap items-end justify-between gap-4 border-b border-zinc-950/10 pb-6 dark:border-white/10">
+        <Heading level="1">Jobs</Heading>
+        <div className="flex gap-4">
+          <Button color="pink" href="/jobs/new">+ Create Job</Button>
         </div>
       </div>
 

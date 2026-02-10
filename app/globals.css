@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
 :root {
   --background: #030712;
   --foreground: #ededed;
@@ -38,11 +43,18 @@ pre {
   border: 1px dashed red !important;
 }
 
-input {
-  background: #000;
-}
-
-
 .pointer {
   cursor:pointer;
+}
+
+input {
+  
+}
+
+.sidebar-layout {
+  background: #020713;
+}
+
+.content {
+  background: #0F1828;
 }

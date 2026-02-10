@@ -1,8 +1,10 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
+import { Description, Field, Label } from "@/components/fieldset";
+import { Input } from "@/components/input";
 
 type UploadResp =
   | {
@@ -14,8 +16,18 @@ type UploadResp =
       uploaded: Record<string, string>;
       jobInputs: Record<string, string>;
       normalization: { started: boolean; pid?: number };
+      promptId?: string | null;
     }
   | { ok: false; error: string; [k: string]: any };
+
+type PromptListItem = {
+  promptId: string;
+  key: string;
+  name?: string;
+  version?: number | null;
+  isActive?: boolean;
+  isDeleted?: boolean;
+};
 
 function makeDefaultCaptureId() {
   return `capture_${uuidv4()}`;
@@ -43,8 +55,69 @@ export default function NewJobPage() {
   const whiteInputRef = useRef<HTMLInputElement | null>(null);
   const uvInputRef = useRef<HTMLInputElement | null>(null);
 
+  // ✅ prompts
+  const [prompts, setPrompts] = useState<PromptListItem[]>([]);
+  const [promptsLoading, setPromptsLoading] = useState(false);
+  const [promptsError, setPromptsError] = useState<string>("");
+
+  // ✅ selected promptId (optional). If empty, server uses default activePromptKey.
+  const [promptId, setPromptId] = useState<string>("");
+
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<UploadResp | null>(null);
+
+  // Fetch prompts on mount
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadPrompts() {
+      setPromptsLoading(true);
+      setPromptsError("");
+      try {
+        const res = await fetch("/api/prompts?activeOnly=true&limit=200", { cache: "no-store" });
+        const data = await res.json().catch(() => null);
+
+        if (!res.ok) throw new Error(data?.error || `Failed to load prompts (HTTP ${res.status})`);
+
+        const items: PromptListItem[] = Array.isArray(data?.prompts) ? data.prompts : [];
+
+        // keep only active + non-deleted (defensive)
+        const active = items.filter((p) => p && !p.isDeleted && p.isActive);
+
+        // sort by key/name
+        active.sort(
+          (a, b) =>
+            (a.key || "").localeCompare(b.key || "") || (a.name || "").localeCompare(b.name || "")
+        );
+
+        if (!cancelled) {
+          setPrompts(active);
+
+          // Pick a default promptId if none selected yet
+          if (!promptId) {
+            const preferred = active.find((p) => p.key === "visible_uv_report") || active[0];
+            if (preferred?.promptId) setPromptId(preferred.promptId);
+          } else {
+            // If the currently selected promptId no longer exists, fall back
+            if (active.length > 0 && !active.some((p) => p.promptId === promptId)) {
+              const preferred = active.find((p) => p.key === "visible_uv_report") || active[0];
+              if (preferred?.promptId) setPromptId(preferred.promptId);
+            }
+          }
+        }
+      } catch (e: any) {
+        if (!cancelled) setPromptsError(e?.message || String(e));
+      } finally {
+        if (!cancelled) setPromptsLoading(false);
+      }
+    }
+
+    loadPrompts();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const canSubmit = useMemo(() => {
     return !!captureId.trim() && !!whiteCenter && !!uvCenter && !submitting;
@@ -54,18 +127,9 @@ export default function NewJobPage() {
     e.preventDefault();
     setResult(null);
 
-    if (!captureId.trim()) {
-      setResult({ ok: false, error: "capture_id is required" });
-      return;
-    }
-    if (!whiteCenter) {
-      setResult({ ok: false, error: "white_center image is required" });
-      return;
-    }
-    if (!uvCenter) {
-      setResult({ ok: false, error: "uv_center image is required" });
-      return;
-    }
+    if (!captureId.trim()) return setResult({ ok: false, error: "capture_id is required" });
+    if (!whiteCenter) return setResult({ ok: false, error: "white_center image is required" });
+    if (!uvCenter) return setResult({ ok: false, error: "uv_center image is required" });
 
     const fd = new FormData();
     fd.append("capture_id", captureId.trim());
@@ -73,20 +137,16 @@ export default function NewJobPage() {
     fd.append("white_center", whiteCenter);
     fd.append("uv_center", uvCenter);
 
+    // ✅ pass up promptId (optional). If blank, server uses default activePromptKey.
+    if (promptId) fd.append("prompt_id", promptId);
+
     setSubmitting(true);
     try {
-      const url = "/api/upload";
-
-      const res = await fetch(url, {
-        method: "POST",
-        body: fd,
-      });
-
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
       const data: UploadResp = await res.json();
       setResult(data);
 
       if ((data as any)?.ok && (data as any)?.jobId) {
-        // router.push(`/jobs/${encodeURIComponent((data as any).jobId)}`);
         router.push(`/jobs`);
       }
     } catch (err: any) {
@@ -99,8 +159,7 @@ export default function NewJobPage() {
   function pickFirstImageFile(dt: DataTransfer | null): File | null {
     if (!dt) return null;
     const files = Array.from(dt.files || []);
-    const img = files.find((f) => f.type?.startsWith("image/"));
-    return img || null;
+    return files.find((f) => f.type?.startsWith("image/")) || null;
   }
 
   return (
@@ -119,21 +178,84 @@ export default function NewJobPage() {
           <div className="text-sm font-semibold">Job Info</div>
 
           <div className="mt-3 grid gap-3">
-            <label className="grid gap-1">
-              <span className="text-sm text-gray-400">capture_id</span>
-              <input
-                className="rounded-lg border px-3 py-2 text-sm bg-gray-50"
-                value={captureId}
-                disabled
-              />
-            </label>
+            <Field>
+              <Label>capture_id</Label>
+              <Input value={captureId} disabled />
+            </Field>
+
+            {/* ✅ Prompt selector (by promptId) */}
+            <Field>
+              <Label>Prompt</Label>
+              <Description>Choose which active prompt to use for analysis.</Description>
+
+              <div className="flex items-center gap-3">
+                <select
+                  className="w-full rounded-lg border px-3 py-2 text-sm"
+                  value={promptId}
+                  onChange={(e) => setPromptId(e.target.value)}
+                  disabled={promptsLoading || prompts.length === 0}
+                >
+                  {prompts.length === 0 ? (
+                    <option value="">
+                      {promptsLoading
+                        ? "Loading prompts..."
+                        : "No active prompts found (server default will be used)"}
+                    </option>
+                  ) : (
+                    prompts.map((p) => (
+                      <option key={p.promptId} value={p.promptId}>
+                        {p.key} — {p.name || "(no name)"}
+                        {typeof p.version === "number" ? ` (v${p.version})` : ""}
+                      </option>
+                    ))
+                  )}
+                </select>
+
+                <button
+                  type="button"
+                  className="rounded-lg border px-3 py-2 text-sm"
+                  onClick={async () => {
+                    setPromptsLoading(true);
+                    setPromptsError("");
+                    try {
+                      const res = await fetch("/api/prompts?activeOnly=true&limit=200", {
+                        cache: "no-store",
+                      });
+                      const data = await res.json().catch(() => null);
+                      if (!res.ok)
+                        throw new Error(data?.error || `Failed to load prompts (HTTP ${res.status})`);
+
+                      const items: PromptListItem[] = Array.isArray(data?.prompts) ? data.prompts : [];
+                      const active = items.filter((p) => p && !p.isDeleted && p.isActive);
+                      active.sort(
+                        (a, b) =>
+                          (a.key || "").localeCompare(b.key || "") ||
+                          (a.name || "").localeCompare(b.name || "")
+                      );
+
+                      setPrompts(active);
+
+                      // keep selection sane
+                      if (active.length > 0 && !active.some((p) => p.promptId === promptId)) {
+                        const preferred = active.find((p) => p.key === "visible_uv_report") || active[0];
+                        if (preferred?.promptId) setPromptId(preferred.promptId);
+                      }
+                    } catch (e: any) {
+                      setPromptsError(e?.message || String(e));
+                    } finally {
+                      setPromptsLoading(false);
+                    }
+                  }}
+                >
+                  Refresh
+                </button>
+              </div>
+
+              {promptsError ? <div className="text-sm text-red-600 mt-2">{promptsError}</div> : null}
+            </Field>
 
             <label className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={isTest}
-                onChange={(e) => setIsTest(e.target.checked)}
-              />
+              <input type="checkbox" checked={isTest} onChange={(e) => setIsTest(e.target.checked)} />
               is_test
             </label>
           </div>
@@ -143,12 +265,14 @@ export default function NewJobPage() {
           <div className="text-sm font-semibold">Images (required)</div>
 
           <div className="mt-4 grid gap-6">
-            {/* ------------------------------ */}
-            {/* WHITE CENTER DROP ZONE */}
-            {/* ------------------------------ */}
+            {/* WHITE CENTER */}
             <div>
               <div className="text-sm text-gray-400 mb-2">
-                Select a <span className="font-mono text-gray-100"><b>white_center</b></span> image.
+                Select a{" "}
+                <span className="font-mono text-gray-100">
+                  <b>white_center</b>
+                </span>{" "}
+                image.
               </div>
 
               <div
@@ -183,7 +307,9 @@ export default function NewJobPage() {
                 className={[
                   "rounded-xl border-2 border-dashed p-5 cursor-pointer select-none",
                   "transition-colors",
-                  whiteDragging ? "border-indigo-500 bg-indigo-50" : "border-gray-300 hover:border-gray-400",
+                  whiteDragging
+                    ? "border-indigo-500 bg-indigo-50"
+                    : "border-gray-300 hover:border-gray-400",
                 ].join(" ")}
               >
                 <div className="flex items-center justify-between gap-3">
@@ -226,12 +352,14 @@ export default function NewJobPage() {
               />
             </div>
 
-            {/* ------------------------------ */}
-            {/* UV CENTER DROP ZONE */}
-            {/* ------------------------------ */}
+            {/* UV CENTER */}
             <div>
               <div className="text-sm text-gray-400 mb-2">
-                Select a <span className="font-mono text-gray-100"><b>uv_center</b></span> image.
+                Select a{" "}
+                <span className="font-mono text-gray-100">
+                  <b>uv_center</b>
+                </span>{" "}
+                image.
               </div>
 
               <div
@@ -266,7 +394,9 @@ export default function NewJobPage() {
                 className={[
                   "rounded-xl border-2 border-dashed p-5 cursor-pointer select-none",
                   "transition-colors",
-                  uvDragging ? "border-indigo-500 bg-indigo-50" : "border-gray-300 hover:border-gray-400",
+                  uvDragging
+                    ? "border-indigo-500 bg-indigo-50"
+                    : "border-gray-300 hover:border-gray-400",
                 ].join(" ")}
               >
                 <div className="flex items-center justify-between gap-3">
@@ -275,7 +405,9 @@ export default function NewJobPage() {
                       {uvCenter ? "File selected" : "Drag & drop an image here"}
                     </div>
                     <div className="text-xs text-gray-500 mt-1">
-                      {uvCenter ? `${uvCenter.name} • ${formatBytes(uvCenter.size)}` : "or click to browse (PNG/JPG/WEBP)"}
+                      {uvCenter
+                        ? `${uvCenter.name} • ${formatBytes(uvCenter.size)}`
+                        : "or click to browse (PNG/JPG/WEBP)"}
                     </div>
                   </div>
 

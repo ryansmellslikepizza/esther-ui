@@ -1,6 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Description, Field, Label } from '@/components/fieldset'
+import { Textarea } from '@/components/textarea'
+import { Input } from '@/components/input'
+import { Checkbox, CheckboxField, CheckboxGroup } from '@/components/checkbox'
 
 type CreatePromptBody = {
   key: string;
@@ -102,39 +106,39 @@ export default function NewPromptPage() {
 
       <form onSubmit={onSubmit} style={{ display: "grid", gap: 14 }}>
         <div style={{ display: "grid", gap: 6 }}>
-          <label style={{ fontWeight: 600 }}>Key *</label>
-          <input
-            value={key}
-            onChange={(e) => setKey(e.target.value)}
-            placeholder="visia_report"
-            style={inputStyle}
-          />
-          <small style={{ color: "#666" }}>
-            Stable identifier your runtime uses to fetch the active prompt.
-          </small>
+          <Field>
+            <Label>Key *</Label>
+            <Description>Stable identifier your runtime uses to fetch the active prompt.</Description>
+            <Input value={key} onChange={(e) => setKey(e.target.value)} style={textareaStyle} />
+          </Field>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
           <div style={{ display: "grid", gap: 6 }}>
-            <label style={{ fontWeight: 600 }}>Name</label>
-            <input value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} />
+            <Field>
+              <Label>Name</Label>
+              <Input value={name} onChange={(e) => setName(e.target.value)} style={textareaStyle} />
+            </Field>
           </div>
 
           <div style={{ display: "grid", gap: 6 }}>
-            <label style={{ fontWeight: 600 }}>Model</label>
-            <input value={model} onChange={(e) => setModel(e.target.value)} style={inputStyle} />
+            <Field>
+              <Label>Model</Label>
+              <Input value={model} onChange={(e) => setModel(e.target.value)} disabled style={textareaStyle} />
+            </Field>
           </div>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
           <div style={{ display: "grid", gap: 6 }}>
-            <label style={{ fontWeight: 600 }}>Version (optional)</label>
-            <input
-              value={version}
+            <Field>
+              <Label>Version (optional)</Label>
+              <Input value={version}
               onChange={(e) => setVersion(e.target.value)}
-              placeholder="1"
-              style={inputStyle}
-            />
+              placeholder="1" 
+              style={textareaStyle}
+              />
+            </Field>
           </div>
 
           <div style={{ display: "grid", gap: 6, alignContent: "end" }}>
@@ -145,52 +149,79 @@ export default function NewPromptPage() {
                 checked={isActive}
                 onChange={(e) => setIsActive(e.target.checked)}
               />
-              <span style={{ color: "#333" }}>Set as active for this key</span>
+              <span>Set as active for this key</span>
             </label>
           </div>
         </div>
 
         <div style={{ display: "grid", gap: 6 }}>
-          <label style={{ fontWeight: 600 }}>Description</label>
-          <input
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Optional note for the admin panel"
-            style={inputStyle}
-          />
+          <Field>
+              <Label>Description</Label>
+              <Input 
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Optional note for the admin panel"
+              style={textareaStyle}
+              />
+          </Field>
         </div>
 
         <div style={{ display: "grid", gap: 6 }}>
-          <label style={{ fontWeight: 600 }}>System Prompt *</label>
-          <textarea
+          
+        <Field>
+          <Label>Description</Label>
+          <Textarea
             value={system}
             onChange={(e) => setSystem(e.target.value)}
             placeholder="Paste the system prompt here..."
-            style={textareaStyle}
             rows={14}
+            style={textareaStyle}
           />
+        </Field>
+
         </div>
 
         <div style={{ display: "grid", gap: 6 }}>
-          <label style={{ fontWeight: 600 }}>User Template (optional)</label>
-          <textarea
+    
+
+        <Field>
+          <Label>User Template 1 quick scan (If 2 images were uploaded)</Label>
+          <Textarea
             value={userTemplate}
             onChange={(e) => setUserTemplate(e.target.value)}
             placeholder='Optional. Example: "Image list:\n{{imageIndexLines}}"'
-            style={textareaStyle}
             rows={8}
+            style={textareaStyle}
           />
+        </Field>
         </div>
 
         <div style={{ display: "grid", gap: 6 }}>
-          <label style={{ fontWeight: 600 }}>Metadata (JSON, optional)</label>
-          <textarea
-            value={metadataJson}
-            onChange={(e) => setMetadataJson(e.target.value)}
-            placeholder='{"tags":["visia","report"]}'
+    
+
+        <Field>
+          <Label>User Template 2 for 3d scan. (If 6 images were uploaded)</Label>
+          <Textarea
+            value={userTemplate}
+            onChange={(e) => setUserTemplate(e.target.value)}
+            placeholder='Optional. Example: "Image list:\n{{imageIndexLines}}"'
+            rows={8}
             style={textareaStyle}
-            rows={4}
           />
+        </Field>
+        </div>
+
+        <div style={{ display: "grid", gap: 6 }}>
+          <Field>
+            <Label>Metadata (JSON, optional)</Label>
+            <Textarea
+              value={metadataJson}
+              onChange={(e) => setMetadataJson(e.target.value)}
+              placeholder='{"tags":["visia","report"]}'
+              rows={4}
+              style={textareaStyle}
+            />
+          </Field>
         </div>
 
         {error ? (
@@ -229,12 +260,7 @@ const inputStyle: React.CSSProperties = {
 };
 
 const textareaStyle: React.CSSProperties = {
-  padding: "10px 12px",
-  border: "1px solid #ddd",
-  borderRadius: 10,
-  fontSize: 14,
   fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-  outline: "none",
 };
 
 const buttonStyle: React.CSSProperties = {

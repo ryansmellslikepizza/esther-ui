@@ -37,7 +37,7 @@ export default async function JobReport({
 
       <h1 className="mt-4 text-2xl font-bold">Image Analysis Report</h1>
 
-      <pre className="mt-4 whitespace-pre-wrap font-mono text-sm bg-slate-50 p-4 rounded border">
+      <pre className="mt-4 whitespace-pre-wrap font-mono text-sm bg-slate-50 p-4 rounded-xl">
         {text}
       </pre>
     </main>
