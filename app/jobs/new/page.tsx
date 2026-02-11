@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 import { Description, Field, Label } from "@/components/fieldset";
 import { Input } from "@/components/input";
+import { Button } from '@/components/button'
 
 type UploadResp =
   | {
@@ -55,14 +56,14 @@ function pickFirstImageFile(dt: DataTransfer | null): File | null {
   return files.find((f) => f.type?.startsWith("image/")) || null;
 }
 
-function DropZone({ label, help, file, setFile, inputRef }: DropZoneProps) {
+function DropZone2({ label, help, file, setFile, inputRef }: DropZoneProps) {
   const [dragging, setDragging] = useState(false);
 
   return (
     <div>
       <div className="text-sm text-gray-400 mb-2">
         Select a{" "}
-        <span className="font-mono text-gray-100">
+        <span className="font-mono text-yellow-400">
           <b>{label}</b>
         </span>{" "}
         image{help ? <span className="text-gray-500"> — {help}</span> : null}
@@ -100,7 +101,7 @@ function DropZone({ label, help, file, setFile, inputRef }: DropZoneProps) {
         className={[
           "rounded-xl border-2 border-dashed p-5 cursor-pointer select-none",
           "transition-colors",
-          dragging ? "border-indigo-500 bg-indigo-50" : "border-gray-300 hover:border-gray-400",
+          dragging ? "border-indigo-500" : "border-gray-300 hover:border-gray-400",
         ].join(" ")}
       >
         <div className="flex items-center justify-between gap-3">
@@ -112,18 +113,130 @@ function DropZone({ label, help, file, setFile, inputRef }: DropZoneProps) {
           </div>
 
           {file ? (
-            <button
-              type="button"
+            <Button
               onClick={(e) => {
                 e.stopPropagation();
                 setFile(null);
                 if (inputRef.current) inputRef.current.value = "";
               }}
-              className="rounded-lg border px-3 py-1.5 text-xs hover:bg-gray-50"
+              
             >
               Clear
-            </button>
+            </Button>
           ) : null}
+        </div>
+      </div>
+
+      <input
+        ref={inputRef}
+        id={label}
+        name={label}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => setFile(e.target.files?.[0] || null)}
+      />
+    </div>
+  );
+}
+
+function DropZone({ label, help, file, setFile, inputRef }: DropZoneProps) {
+  const [dragging, setDragging] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  // Create / cleanup object URL for preview
+  useEffect(() => {
+    if (!file) {
+      setPreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
+
+  return (
+    <div>
+      <div className="text-sm text-gray-400 mb-2">
+        Select a{" "}
+        <span className="font-mono text-yellow-400">
+          <b>{label}</b>
+        </span>{" "}
+        image{help ? <span className="text-gray-500"> — {help}</span> : null}
+      </div>
+
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={() => inputRef.current?.click()}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") inputRef.current?.click();
+        }}
+        onDragEnter={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setDragging(true);
+        }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setDragging(true);
+        }}
+        onDragLeave={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setDragging(false);
+        }}
+        onDrop={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setDragging(false);
+          const f = pickFirstImageFile(e.dataTransfer);
+          if (f) setFile(f);
+        }}
+        className={[
+          "rounded-xl border-2 border-dashed p-5 cursor-pointer select-none",
+          "transition-colors",
+          dragging ? "border-indigo-500" : "border-gray-300 hover:border-gray-400",
+        ].join(" ")}
+      >
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <div className="text-sm font-medium">
+              {file ? "File selected" : "Drag & drop an image here"}
+            </div>
+            <div className="text-xs text-gray-500 mt-1 truncate">
+              {file ? `${file.name} • ${formatBytes(file.size)}` : "or click to browse (PNG/JPG/WEBP)"}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {/* Preview thumbnail */}
+            {previewUrl ? (
+              <div className="h-10 w-10 rounded-lg overflow-hidden bg-gray-50 shrink-0">
+                <img
+                  src={previewUrl}
+                  alt={`${label} preview`}
+                  className="h-full w-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+            ) : null}
+
+            {file ? (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setFile(null);
+                  if (inputRef.current) inputRef.current.value = "";
+                }}
+                className="rounded-lg border px-3 py-1.5 text-xs hover:border-pink-500 pointer"
+              >
+                Clear
+              </button>
+            ) : null}
+          </div>
         </div>
       </div>
 
@@ -381,7 +494,7 @@ export default function NewJobPage() {
 
                 <button
                   type="button"
-                  className="rounded-lg border px-3 py-2 text-sm"
+                  className="rounded-lg border px-3 py-2 text-sm pointer hover:border-pink-500"
                   onClick={async () => {
                     setPromptsLoading(true);
                     setPromptsError("");
@@ -518,7 +631,7 @@ export default function NewJobPage() {
             {submitting ? "Uploading..." : "Create Job"}
           </button>
 
-          <button type="button" className="rounded-lg border px-4 py-2 text-sm" onClick={resetAll}>
+          <button type="button" className="rounded-lg border px-4 py-2 text-sm hover:border-pink-500 pointer" onClick={resetAll}>
             Reset
           </button>
         </div>
