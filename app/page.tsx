@@ -14,7 +14,7 @@ export default async function Home() {
   return (
     <main className="font-sans">
       <div className="flex w-full flex-wrap items-end justify-between gap-4 border- border-zinc-950/10 pb-6 dark:border-white/10">
-        <Heading>Esther AI</Heading>
+        <Heading>Ester AI</Heading>
       </div>
       <p className=" text-gray-600">API health check:</p>
       <pre className="mt-4 rounded-xl p-4 text-sm">

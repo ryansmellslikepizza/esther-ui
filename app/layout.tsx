@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Esther AI",
-  description: "Esther AI",
+  title: "Ester AI",
+  description: "Ester AI",
 };
 
 export default function RootLayout({

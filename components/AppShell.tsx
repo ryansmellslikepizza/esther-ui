@@ -26,22 +26,21 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <SidebarSection>
               <div className="mb-2 ml-2 mt-2 flex">
               <Link href="/" aria-label="Home">
-                Esther AI
+                Ester AI
               </Link>
             </div>
             </SidebarSection>
           </SidebarHeader>
           <SidebarBody>
-            
             <SidebarSection>
-              <SidebarItem>
-                <Link href="/">Home</Link>
+              <SidebarItem href="/">
+                Home
               </SidebarItem>
-              <SidebarItem>
-                <Link href="/jobs">Jobs</Link>
+              <SidebarItem href="/jobs">
+                Jobs
               </SidebarItem>
-              <SidebarItem>
-                <Link href="/prompts">Prompts</Link>
+              <SidebarItem href="/prompts">
+                Prompts
               </SidebarItem>
             </SidebarSection>
           </SidebarBody>
