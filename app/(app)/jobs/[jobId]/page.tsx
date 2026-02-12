@@ -77,7 +77,7 @@ export default async function JobDetail({
         ← Back
       </a>
 
-      <div className="flex w-full flex-wrap items-end justify-between gap-4 border-b pb-5 dark:border-white/10">
+      <div className="flex w-full flex-wrap items-end justify-between gap-4 border-b pb-5 border-white/10">
         <Heading>Job Page</Heading>
       </div>
 

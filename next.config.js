@@ -9,7 +9,7 @@ const nextConfig = {
       { source: "/outputs/:path*", destination: "http://localhost:3000/outputs/:path*" },
     ];
   },
-  devIndicators: false,
+  devIndicators: true,
 };
 
 module.exports = nextConfig;
