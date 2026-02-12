@@ -25,7 +25,7 @@ function ScanTypePill({ length }: { length: number }) {
   let text = "";
   
   if (length == 2) {
-    cls = "orange"
+    cls = "purple"
     text = "Quick Scan"
   } else if (length == 6) {
     cls = "green"
