@@ -137,11 +137,18 @@ export default function SettingsPage() {
       setConfirmNewPassword("");
 
       if (data?.user) {
-        let sessionUser = getSessionUser();
-        sessionUser.email = data?.user.email;
-        sessionUser.firstName = data?.user.firstName;
-        sessionUser.lastName = data?.user.lastName;
-        setSessionUser(sessionUser);
+        const current = getSessionUser();
+
+        if (!current) return;
+
+        const updated = {
+          ...current,
+          email: data?.user?.email ?? current.email ?? "",
+          firstName: data?.user?.firstName ?? current.firstName ?? "",
+          lastName: data?.user?.lastName ?? current.lastName ?? "",
+        };
+
+        setSessionUser(updated);
       }
 
       console.log(data)

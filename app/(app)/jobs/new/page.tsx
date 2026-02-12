@@ -299,8 +299,8 @@ export default function NewJobPage() {
     let cancelled = false;
 
     const user = getSessionUser();
-    setFirstName(user?.firstName)
-    setUserId(user?.userId)
+    setFirstName(user?.firstName ?? "");
+    setUserId(user?.userId ?? "");
     
     async function loadPrompts() {
       setPromptsLoading(true);
