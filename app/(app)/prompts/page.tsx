@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Badge } from '@/components/badge'
 import { Button } from '@/components/button'
 import { Heading } from '@/components/heading'
+import { api } from "@/lib/api";
 
 type PromptListItem = {
   promptId: string;
@@ -39,7 +40,7 @@ export default function PromptsPage() {
     if (keyFilter.trim()) params.set("key", keyFilter.trim());
     if (activeOnly) params.set("activeOnly", "true");
     if (includeDeleted) params.set("includeDeleted", "true");
-    return `${apiBase}/api/prompts?${params.toString()}`;
+    return `/api/prompts?${params.toString()}`;
   }
 
   async function load() {
@@ -48,9 +49,9 @@ export default function PromptsPage() {
 
     try {
       const url = buildUrl();
-      const res = await fetch(url, { method: "GET" });
-      const data = await res.json().catch(() => null);
-
+      const res = await api.get(`/api/prompts`);
+      const data = res;
+      
       if (!res.ok) {
         setError(data?.error || `Request failed (HTTP ${res.status})`);
         setRows([]);
@@ -73,7 +74,7 @@ export default function PromptsPage() {
 
   return (
     <main className="font-sans">
-      <div className="flex w-full flex-wrap items-end justify-between gap-4 border- border-zinc-950/10 pb-6 dark:border-white/10">
+      <div className="flex w-full flex-wrap items-end justify-between gap-4 pb-6 border-white/10">
         <Heading>Prompts</Heading>
         <div className="flex gap-0">
           <Button color="pink" href="/prompts/new">+ Create Prompt</Button>
@@ -140,9 +141,9 @@ export default function PromptsPage() {
       </div> */}
 
       {/* Table */}
-      <div style={{ marginTop: 0, border: "1px solid #eee", borderRadius: 14, overflow: "hidden" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
-        <thead>
+      <div style={{ marginTop: 0, border: "1px solid #eee", overflow: "hidden" }} className="rounded-xl">
+        <table style={{ width: "100%", borderCollapse: "collapse" }} className="text-sm px-4 py-3">
+        <thead className="px-10 py-3">
             <tr style={{ background: "#" }}>
             <Th>Key</Th>
             <Th>Name</Th>
@@ -163,7 +164,7 @@ export default function PromptsPage() {
             </tr>
             ) : (
             rows.map((p) => (
-                <tr key={p.promptId} style={{ borderTop: "1px solid #eee" }}>
+                <tr key={p.promptId} style={{ borderTop: "1px solid #eee" }} className="px-4 py-3">
                 <Td>
                     <div style={{ fontWeight: 800 }}>{p.key || "-"}</div>
                     <div style={{ color: "#666", fontSize: 12, marginTop: 2 }}>{p.promptId}</div>

@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from "uuid";
 import { Description, Field, Label } from "@/components/fieldset";
 import { Input } from "@/components/input";
 import { Button } from '@/components/button'
+import { getSessionUser } from "@/lib/session";
 
 type UploadResp =
   | {
@@ -257,6 +258,8 @@ export default function NewJobPage() {
   const router = useRouter();
 
   const [captureId, setCaptureId] = useState(makeDefaultCaptureId());
+  const [firstName, setFirstName] = useState("");
+  const [userId, setUserId] = useState("");
   const [isTest, setIsTest] = useState(true);
 
   // ✅ scan mode toggle
@@ -295,6 +298,10 @@ export default function NewJobPage() {
   useEffect(() => {
     let cancelled = false;
 
+    const user = getSessionUser();
+    setFirstName(user?.firstName)
+    setUserId(user?.userId)
+    
     async function loadPrompts() {
       setPromptsLoading(true);
       setPromptsError("");
@@ -338,6 +345,7 @@ export default function NewJobPage() {
 
   // If they toggle OFF full scan, clear the 4 extra files so we never “mix”
   useEffect(() => {
+
     if (!isFullScan) {
       setWhiteYawLeft(null);
       setUvYawLeft(null);
@@ -382,6 +390,7 @@ export default function NewJobPage() {
     setResult(null);
 
     if (!captureId.trim()) return setResult({ ok: false, error: "capture_id is required" });
+    if (!userId.trim()) return setResult({ ok: false, error: "user_id is required" });
     if (!whiteCenter) return setResult({ ok: false, error: "white_center image is required" });
     if (!uvCenter) return setResult({ ok: false, error: "uv_center image is required" });
 
@@ -394,6 +403,7 @@ export default function NewJobPage() {
 
     const fd = new FormData();
     fd.append("capture_id", captureId.trim());
+    fd.append("user_id", userId.trim());
     fd.append("is_test", isTest ? "true" : "false");
 
     // optional scan hint (backend can also infer from received keys)
@@ -461,6 +471,11 @@ export default function NewJobPage() {
             <Field>
               <Label>capture_id</Label>
               <Input value={captureId} disabled />
+            </Field>
+
+            <Field>
+              <Label>created_by</Label>
+              <Input value={firstName} disabled />
             </Field>
 
             {/* Prompt selector */}

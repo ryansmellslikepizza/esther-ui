@@ -44,7 +44,7 @@ pre {
 }
 
 .pointer {
-  cursor:pointer;
+  cursor:pointer !important;
 }
 
 input {

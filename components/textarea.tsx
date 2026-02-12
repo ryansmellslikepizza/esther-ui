@@ -38,7 +38,7 @@ export const Textarea = forwardRef(function Textarea(
           // Border
           'border border-white/10 data-hover:border-white/20 data-focus:border-blue-500',
           // Background color
-          'bg-transparent bg-gray-800',
+          'bg-gray-800',
           // Hide default focus styles
           'focus:outline-hidden',
           // Invalid state

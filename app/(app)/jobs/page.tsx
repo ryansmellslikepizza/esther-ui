@@ -2,6 +2,7 @@
 import { Badge } from '@/components/badge'
 import { Button } from '@/components/button'
 import { Heading } from '@/components/heading'
+import { api } from "@/lib/api";
 
 type JobRow = {
   jobId: string;
@@ -11,6 +12,7 @@ type JobRow = {
   inputs: string[];
   eventsCount: number;
   error: any;
+  creator: any;
 };
 
 
@@ -29,8 +31,8 @@ function StatusPill({ status }: { status: string }) {
 }
 
 export default async function JobsPage() {
-  const res = await fetch("http://localhost:3001/api/jobs?limit=50", { cache: "no-store" });
-  const data = await res.json();
+  const res = await api.get("/api/jobs?limit=50", { cache: "no-store" });
+  const data = await res;
 
   const jobs: JobRow[] = data?.jobs || [];
 
@@ -50,28 +52,30 @@ export default async function JobsPage() {
       )}
 
       <div className="overflow-hidden rounded-xl border">
-        <div className="grid grid-cols-12 gap-0 px-4 py-3 text-xs font-semibold text-gray-600">
+        <div className="grid grid-cols-12 gap-0 px-3 py-3 font-bold text-gray-200 text-sm">
           <div className="col-span-4">Job</div>
+          <div className="col-span-2">Created By</div>
           <div className="col-span-2">Status</div>
           <div className="col-span-2">Inputs</div>
           <div className="col-span-2">Updated</div>
-          <div className="col-span-2">Events</div>
+          {/* <div className="col-span-2">Events</div> */}
         </div>
 
         {jobs.length === 0 ? (
-          <div className="px-4 py-6 text-sm text-gray-600">No jobs yet.</div>
+          <div className="px-3 py-6 text-sm text-gray-600">No jobs yet.</div>
         ) : (
           jobs.map((j) => (
             <a
               key={j.jobId}
               href={`/jobs/${encodeURIComponent(j.jobId)}`}
-              className="grid grid-cols-12 gap-0 px-4 py-3 text-sm border-t"
+              className="grid grid-cols-12 gap-0 px-3 py-3 text-sm border-t"
             >
-              <div className="col-span-4 font-semibold">{j.jobId}</div>
+              <div className="col-span-4 font-semibold text-xs pt-1">{j.jobId}</div>
+              <div className="col-span-2 text-yellow-500 font-semibold text-xs pt-1">{j.creator.firstName}</div>
               <div className="col-span-2"><StatusPill status={j.status} /></div>
-              <div className="col-span-2 text-gray-700">{(j.inputs || []).join(", ") || "-"}</div>
-              <div className="col-span-2 text-gray-700">{j.updatedAt ? new Date(j.updatedAt).toLocaleString() : "-"}</div>
-              <div className="col-span-2 text-gray-700">{j.eventsCount ?? 0}</div>
+              <div className="col-span-2 text-gray-500 text-xs pt-1">{(j.inputs || []).join(", ") || "-"}</div>
+              <div className="col-span-2 text-gray-500">{j.updatedAt ? new Date(j.updatedAt).toLocaleString() : "-"}</div>
+              {/* <div className="col-span-2 text-gray-500">{j.eventsCount ?? 0}</div> */}
             </a>
           ))
         )}

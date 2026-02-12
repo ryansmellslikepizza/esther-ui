@@ -2,6 +2,8 @@ import { Heading } from '@/components/heading'
 import { Button } from '@/components/button'
 import { Badge } from '@/components/badge'
 import { Divider } from '@/components/divider'
+import { api } from "@/lib/api";
+import { DescriptionDetails, DescriptionList, DescriptionTerm } from '@/components/description-list'
 
 function StatusPill({ status }: { status: string }) {
   const base = "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold border";
@@ -24,11 +26,8 @@ export default async function JobDetail({
 }) {
   const { jobId } = await params;
 
-  const res = await fetch(
-    `http://localhost:3001/api/jobs/${encodeURIComponent(jobId)}`,
-    { cache: "no-store" }
-  );
-  const data = await res.json();
+  const res = await api.get(`/api/jobs/${encodeURIComponent(jobId)}`,);
+  const data = res;
 
   if (!data?.ok) {
     return (
@@ -62,14 +61,30 @@ export default async function JobDetail({
         ← Back
       </a>
 
-      <div className="flex w-full flex-wrap items-end justify-between gap-4 border- border-zinc-950/10 pb-6 dark:border-white/10">
-        <Heading>{job.jobId}</Heading>
-        <div className="flex gap-4 ">
-          Status: <StatusPill status={job.status || "unknown"} />
-        </div>
+      <div className="flex w-full flex-wrap items-end justify-between gap-4 border-b pb-5 dark:border-white/10">
+        <Heading>Job Page</Heading>
       </div>
 
+      <DescriptionList className="mb-10">
+        <DescriptionTerm>Job Id</DescriptionTerm>
+        <DescriptionDetails>{job.jobId}</DescriptionDetails>
+
+        <DescriptionTerm>Status</DescriptionTerm>
+        <DescriptionDetails><StatusPill status={job.status || "unknown"} /></DescriptionDetails>
+
+        <DescriptionTerm>Created By</DescriptionTerm>
+        <DescriptionDetails><span className="text-yellow-500 font-bold">{job.creator.firstName}</span></DescriptionDetails>
+
+        <DescriptionTerm>Updated At</DescriptionTerm>
+        <DescriptionDetails>{job.updatedAt ? new Date(job.updatedAt).toLocaleString() : "-"}</DescriptionDetails>
+
+        {/* <DescriptionTerm>Access</DescriptionTerm>
+        <DescriptionDetails>Admin</DescriptionDetails> */}
+
+      </DescriptionList>
       <div className="grid gap-4">
+
+
         <div className="rounded-xl border p-4">
           <div className="text-sm font-semibold">Input</div>
           {inputTypes.length === 0 ? (

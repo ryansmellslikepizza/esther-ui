@@ -254,7 +254,7 @@ export default function NewPromptPage() {
           </div>
         ) : null}
 
-        <button className="bg-indigo-500" type="submit" disabled={!canSubmit || saving} style={buttonStyle}>
+        <button className="bg-pink-500 mt-5" type="submit" disabled={!canSubmit || saving} style={buttonStyle}>
           {saving ? "Saving..." : "Create Prompt"}
         </button>
 

@@ -128,7 +128,7 @@ export default function PromptViewerPage({
         </div>
 
         {/* Actions */}
-        {!loading && !error && prompt && !prompt.isDeleted ? (
+        {/* {!loading && !error && prompt && !prompt.isDeleted ? (
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
             {!prompt.isActive ? (
               <Button type="button" onClick={activate} disabled={acting || !prompt.key} color="green">
@@ -140,7 +140,7 @@ export default function PromptViewerPage({
               </Button>
             )}
           </div>
-        ) : null}
+        ) : null} */}
       </div>
 
       {actionError ? (
