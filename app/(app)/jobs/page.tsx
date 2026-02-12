@@ -57,7 +57,7 @@ export default async function JobsPage() {
           <div className="col-span-2">Created By</div>
           <div className="col-span-2">Status</div>
           <div className="col-span-2">Scan Type</div>
-          <div className="col-span-2">Updated</div>
+          <div className="col-span-2">Created</div>
           {/* <div className="col-span-2">Events</div> */}
         </div>
 
@@ -74,7 +74,7 @@ export default async function JobsPage() {
               <div className="col-span-2 text-yellow-500 font-semibold text-xs pt-1">{j.creator.firstName}</div>
               <div className="col-span-2"><StatusPill status={j.status} /></div>
               <div className="col-span-2 text-gray-500 text-xs pt-1">{j.inputs.length == 2 ? "Quick Scan" : "Full 3d Scan"}</div>
-              <div className="col-span-2 text-gray-500">{j.updatedAt ? new Date(j.updatedAt).toLocaleString() : "-"}</div>
+              <div className="col-span-2 text-gray-500">{j.createdAt ? new Date(j.createdAt).toLocaleString() : "-"}</div>
               {/* <div className="col-span-2 text-gray-500">{j.eventsCount ?? 0}</div> */}
             </a>
           ))
