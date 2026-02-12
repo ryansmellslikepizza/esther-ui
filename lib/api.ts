@@ -20,7 +20,7 @@ const API_HOST =
   process.env.NEXT_PUBLIC_API_HOST ||
   (process.env.NODE_ENV === "development"
     ? "http://127.0.0.1:3000"
-    : "https://api.yourdomain.com");
+    : "https://admin.dermis.dev");
 
 
 console.log("API HOST:", API_HOST)
