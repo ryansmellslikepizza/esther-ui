@@ -19,6 +19,22 @@ function StatusPill({ status }: { status: string }) {
   return <Badge color={cls as any}>{status}</Badge>;
 }
 
+function ScanTypePill({ length }: { length: number }) {
+  const base = "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold border";
+  let cls = "pink";
+  let text = "";
+  
+  if (length == 2) {
+    cls = "orange"
+    text = "Quick Scan"
+  } else if (length == 6) {
+    cls = "green"
+    text = "Full 3D Scan"
+  }
+
+  return <Badge color={cls as any}>{text}</Badge>;
+}
+
 export default async function JobDetail({
   params,
 }: {
@@ -71,6 +87,9 @@ export default async function JobDetail({
 
         <DescriptionTerm>Status</DescriptionTerm>
         <DescriptionDetails><StatusPill status={job.status || "unknown"} /></DescriptionDetails>
+
+        <DescriptionTerm>Scan Type</DescriptionTerm>
+        <DescriptionDetails><ScanTypePill length={inputTypes.length} /></DescriptionDetails>
 
         <DescriptionTerm>Created By</DescriptionTerm>
         <DescriptionDetails><span className="text-yellow-500 font-bold">{job.creator.firstName}</span></DescriptionDetails>

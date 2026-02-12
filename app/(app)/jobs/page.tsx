@@ -30,6 +30,22 @@ function StatusPill({ status }: { status: string }) {
   return <Badge color={cls as any}>{status}</Badge>;
 }
 
+function ScanTypePill({ length }: { length: number }) {
+  const base = "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold border";
+  let cls = "pink";
+  let text = "";
+  
+  if (length == 2) {
+    cls = "orange"
+    text = "Quick Scan"
+  } else if (length == 6) {
+    cls = "green"
+    text = "Full 3D Scan"
+  }
+
+  return <Badge color={cls as any}>{text}</Badge>;
+}
+
 export default async function JobsPage() {
   const res = await api.get("/api/jobs?limit=50", { cache: "no-store" });
   const data = await res;
@@ -73,7 +89,7 @@ export default async function JobsPage() {
               <div className="col-span-4 font-semibold text-xs pt-1">{j.jobId}</div>
               <div className="col-span-2 text-yellow-500 font-semibold text-xs pt-1">{j.creator.firstName}</div>
               <div className="col-span-2"><StatusPill status={j.status} /></div>
-              <div className="col-span-2 text-gray-500 text-xs pt-1">{j.inputs.length == 2 ? "Quick Scan" : "Full 3d Scan"}</div>
+              <div className="col-span-2 text-gray-500 text-xs"><ScanTypePill length={j.inputs.length} /></div>
               <div className="col-span-2 text-gray-500">{j.createdAt ? new Date(j.createdAt).toLocaleString() : "-"}</div>
               {/* <div className="col-span-2 text-gray-500">{j.eventsCount ?? 0}</div> */}
             </a>
