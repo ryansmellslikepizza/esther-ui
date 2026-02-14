@@ -73,7 +73,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <SidebarHeader>
             <SidebarSection>
               <div className="mb-2 ml-2 mt-2 flex">
-                <Link href="/"><strong>Ester Dashboard</strong></Link>
+                <Link href="/" className="text-xl"><strong>Ester AI</strong></Link>
               </div>
             </SidebarSection>
           </SidebarHeader>
