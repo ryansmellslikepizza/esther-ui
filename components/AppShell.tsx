@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Avatar } from '@/components/avatar'
 // import { Sidebar, SidebarBody, SidebarFooter, SidebarItem, SidebarLabel, SidebarSection } from '@/components/sidebar'
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { api } from "@/lib/api";
 import { getSessionUser } from "@/lib/session";
 import { SidebarLayout } from "@/components/sidebar-layout";
@@ -33,11 +33,13 @@ import {
   HomeIcon,
   RectangleGroupIcon,
   SparklesIcon,
+  UsersIcon,
 } from '@heroicons/react/16/solid'
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [isAdmin, setIsAdmin] = useState(false);
+  const pathname = usePathname();
   
   async function handleLogout() {
     try {
@@ -46,6 +48,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     } catch (e) {
       console.error("Logout failed", e);
     }
+  }
+
+  function isActive(href: string) {
+    if (href === "/") return pathname === "/";
+    return pathname.startsWith(href);
   }
 
   useEffect(() => {
@@ -68,23 +75,27 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <SidebarBody>
             <SidebarSection>
               
-              <SidebarItem href="/">
+              <SidebarItem href="/" {...(isActive("/") ? { current: true } : {})} >
                 <HomeIcon />
                 <SidebarLabel>Home</SidebarLabel>
               </SidebarItem>
-              <SidebarItem href="/jobs">
+              <SidebarItem href="/jobs" {...(isActive("/jobs") ? { current: true } : {})}>
                 <RectangleGroupIcon />
                 <SidebarLabel>Jobs</SidebarLabel>
               </SidebarItem>
-              <SidebarItem href="/prompts">
+              <SidebarItem href="/prompts" {...(isActive("/prompts") ? { current: true } : {})}>
                 <SparklesIcon />
                 <SidebarLabel>Prompts</SidebarLabel>
               </SidebarItem>
+              <SidebarItem href="/users" {...(isActive("/users") ? { current: true } : {})}>
+                <UsersIcon />
+                <SidebarLabel>Users</SidebarLabel>
+              </SidebarItem>
             </SidebarSection>
-
+        
             <SidebarSection>
               <SidebarHeading>User Account</SidebarHeading>
-              <SidebarItem className="pointer" href="/user/settings">
+              <SidebarItem className="pointer" href="/user/settings" {...(isActive("/user/") ? { current: true } : {})}>
                 <Cog6ToothIcon />
                 <SidebarLabel>Settings</SidebarLabel>
               </SidebarItem>

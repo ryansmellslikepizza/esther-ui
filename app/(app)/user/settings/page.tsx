@@ -11,7 +11,14 @@ import { getSessionUser, setSessionUser } from "@/lib/session";
 type MeResp = {
   ok: boolean;
   authenticated?: boolean;
-  user?: { email?: string; firstName?: string; lastName?: string; userId?: string; isAdmin?: boolean };
+  user?: {
+    email?: string;
+    firstName?: string;
+    lastName?: string;
+    age?: number;
+    userId?: string;
+    isAdmin?: boolean;
+  };
   error?: string;
 };
 
@@ -19,13 +26,21 @@ type UpdateMeBody = {
   email?: string;
   firstName?: string;
   lastName?: string;
+  age?: number;
   currentPassword?: string;
   newPassword?: string;
 };
 
 type UpdateMeResp = {
   ok: boolean;
-  user?: { email?: string; firstName?: string; lastName?: string; userId?: string; isAdmin?: boolean };
+  user?: {
+    email?: string;
+    firstName?: string;
+    lastName?: string;
+    age?: number;
+    userId?: string;
+    isAdmin?: boolean;
+  };
   error?: string;
 };
 
@@ -33,6 +48,7 @@ export default function SettingsPage() {
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [age, setAge] = useState<number | "">("");
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -52,11 +68,10 @@ export default function SettingsPage() {
           setEmail(me.user?.email || "");
           setFirstName(me.user?.firstName || "");
           setLastName(me.user?.lastName || "");
+          setAge(typeof me.user?.age === "number" ? me.user.age : "");
         }
       } catch (e: any) {
-        // If you haven't implemented GET /api/me yet, you can ignore this.
-        // Otherwise this will show errors when not logged in.
-        // setError(e?.message || String(e));
+        setError(e?.message || String(e));
       } finally {
         setLoadingMe(false);
       }
@@ -83,8 +98,23 @@ export default function SettingsPage() {
       if (newPassword !== confirmNewPassword) return false;
     }
 
+    // Age is optional, but if present, validate it
+    if (age !== "") {
+      if (!Number.isFinite(age)) return false;
+      if (age < 0 || age > 120) return false;
+    }
+
     return true;
-  }, [email, firstName, lastName, wantsPasswordChange, currentPassword, newPassword, confirmNewPassword]);
+  }, [
+    email,
+    firstName,
+    lastName,
+    age,
+    wantsPasswordChange,
+    currentPassword,
+    newPassword,
+    confirmNewPassword,
+  ]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -96,6 +126,7 @@ export default function SettingsPage() {
     if (email.trim()) body.email = email.trim();
     if (firstName.trim()) body.firstName = firstName.trim();
     if (lastName.trim()) body.lastName = lastName.trim();
+    if (age !== "") body.age = age;
 
     if (wantsPasswordChange) {
       if (!currentPassword.trim()) {
@@ -138,7 +169,6 @@ export default function SettingsPage() {
 
       if (data?.user) {
         const current = getSessionUser();
-
         if (!current) return;
 
         const updated = {
@@ -146,17 +176,32 @@ export default function SettingsPage() {
           email: data?.user?.email ?? current.email ?? "",
           firstName: data?.user?.firstName ?? current.firstName ?? "",
           lastName: data?.user?.lastName ?? current.lastName ?? "",
+          age: data?.user?.age ?? (current as any).age ?? undefined,
         };
 
-        setSessionUser(updated);
+        setSessionUser(updated as any);
       }
 
-      console.log(data)
+      console.log(data);
     } catch (err: any) {
       setError(err?.message || String(err));
     } finally {
       setSaving(false);
     }
+  }
+
+  function onAgeChange(v: string) {
+    const s = v.trim();
+    if (!s) {
+      setAge("");
+      return;
+    }
+    const n = Number(s);
+    if (!Number.isFinite(n)) return;
+
+    // keep it integer-like; adjust if you want to allow decimals
+    const clamped = Math.max(0, Math.min(120, Math.floor(n)));
+    setAge(clamped);
   }
 
   return (
@@ -168,14 +213,10 @@ export default function SettingsPage() {
 
       <form onSubmit={onSubmit} style={{ display: "grid", gap: 14 }} autoComplete="off">
         <div style={{ display: "grid", gap: 6 }}>
-
-        <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0 }}>
-            Basic Settings
-        </h2>
+          <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0 }}>Basic Settings</h2>
 
           <Field>
             <Label>Email</Label>
-            {/* <Description>Leave blank to keep your current email.</Description> */}
             <Input
               type="email"
               autoComplete="off"
@@ -191,7 +232,6 @@ export default function SettingsPage() {
         <div style={{ display: "grid", gap: 6 }}>
           <Field>
             <Label>First Name</Label>
-            {/* <Description>Leave blank to keep your current name.</Description> */}
             <Input
               value={firstName}
               autoComplete="off"
@@ -202,10 +242,10 @@ export default function SettingsPage() {
             />
           </Field>
         </div>
+
         <div style={{ display: "grid", gap: 6 }}>
           <Field>
             <Label>Last Name</Label>
-            {/* <Description>Leave blank to keep your current name.</Description> */}
             <Input
               value={lastName}
               autoComplete="off"
@@ -217,65 +257,24 @@ export default function SettingsPage() {
           </Field>
         </div>
 
-        {/* <div
-          style={{
-            borderTop: "1px solid rgba(255,255,255,0.12)",
-            paddingTop: 40,
-            marginTop: 40,
-            display: "grid",
-            gap: 20,
-          }}
-        >
-          <div>
-            <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0 }}>Change password</h2>
-            
-        <small style={{ color: "#666" }}>
-          Tip: To change your password, you must provide your current password and enter the new one
-          twice.
-        </small>
-          </div>
-
-          <div style={{ display: "grid", gap: 6 }}>
-            <Field>
-              <Label>Current password</Label>
-              <Input
-                type="password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword((e.target as HTMLInputElement).value)}
-                autoComplete="current-password"
-                style={monoStyle}
-              />
-            </Field>
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-            <div style={{ display: "grid", gap: 6 }}>
-              <Field>
-                <Label>New password</Label>
-                <Input
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword((e.target as HTMLInputElement).value)}
-                  autoComplete="new-password"
-                  style={monoStyle}
-                />
-              </Field>
-            </div>
-
-            <div style={{ display: "grid", gap: 6 }}>
-              <Field>
-                <Label>Confirm new password</Label>
-                <Input
-                  type="password"
-                  value={confirmNewPassword}
-                  onChange={(e) => setConfirmNewPassword((e.target as HTMLInputElement).value)}
-                  autoComplete="new-password"
-                  style={monoStyle}
-                />
-              </Field>
-            </div>
-          </div>
-        </div> */}
+        <div style={{ display: "grid", gap: 6 }}>
+          <Field>
+            <Label>Age</Label>
+            {/* <Description>Optional. Used for better analysis personalization.</Description> */}
+            <Input
+              type="number"
+              min={0}
+              max={120}
+              inputMode="numeric"
+              value={age === "" ? "" : String(age)}
+              autoComplete="off"
+              onChange={(e) => onAgeChange((e.target as HTMLInputElement).value)}
+              placeholder="e.g. 46"
+              style={monoStyle}
+              disabled={loadingMe}
+            />
+          </Field>
+        </div>
 
         {error ? (
           <div
@@ -316,31 +315,27 @@ export default function SettingsPage() {
         </Button>
 
         <div
-            style={{
-                borderTop: "1px solid rgba(255,255,255,0.12)",
-                paddingTop: 25,
-                marginTop: 25,
-                display: "grid",
-                gap: 16,
-            }}
-            >
-            <div>
-                <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0 }}>
-                Security
-                </h2>
-                <p style={{ marginTop: 6, color: "#666" }}>
-                Manage your password and account security.
-                </p>
-            </div>
+          style={{
+            borderTop: "1px solid rgba(255,255,255,0.12)",
+            paddingTop: 25,
+            marginTop: 25,
+            display: "grid",
+            gap: 16,
+          }}
+        >
+          <div>
+            <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0 }}>Security</h2>
+            <p style={{ marginTop: 6, color: "#666" }}>
+              Manage your password and account security.
+            </p>
+          </div>
 
-            <Link href="/user/settings/password">
-                <Button color="zinc" type="button">
-                Change password
-                </Button>
-            </Link>
-            </div>
-
-
+          <Link href="/user/settings/password">
+            <Button color="zinc" type="button">
+              Change password
+            </Button>
+          </Link>
+        </div>
       </form>
     </div>
   );
