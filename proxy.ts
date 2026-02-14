@@ -1,3 +1,6 @@
+
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
@@ -25,7 +28,7 @@ function isAdminOnlyPath(pathname: string) {
   return ADMIN_ONLY_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"));
 }
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Let Next internals pass

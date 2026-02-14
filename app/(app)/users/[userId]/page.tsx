@@ -1,3 +1,5 @@
+
+export const dynamic = "force-dynamic";
 import { Heading } from "@/components/heading";
 import { Badge } from "@/components/badge";
 import { api } from "@/lib/api";

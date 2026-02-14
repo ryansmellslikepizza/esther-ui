@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { Badge } from "@/components/badge";
 import { Button } from "@/components/button";
 import { Heading } from "@/components/heading";

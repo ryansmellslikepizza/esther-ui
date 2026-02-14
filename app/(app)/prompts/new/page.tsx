@@ -1,5 +1,5 @@
 "use client";
-
+export const dynamic = "force-dynamic";
 import { useMemo, useState } from "react";
 import { Description, Field, Label } from "@/components/fieldset";
 import { Textarea } from "@/components/textarea";
