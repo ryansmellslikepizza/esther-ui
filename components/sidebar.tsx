@@ -103,6 +103,74 @@ export const SidebarItem = forwardRef(function SidebarItem(
     'data-active:bg-white/5 data-active:*:data-[slot=icon]:fill-white',
     'data-current:*:data-[slot=icon]:fill-white',
     'data-current:bg-blue-600',
+    'data-current:font-extrabold',
+    'data-current:data-hover:bg-blue-600',
+  )
+
+  return (
+    <span className={clsx(className, 'relative')}>
+      {current && (
+        <motion.span
+          layoutId="current-indicator"
+          className="absolute inset-y-2 -left-4 w-0.5 rounded-full bg-zinc-950 bg-white"
+        />
+      )}
+      {typeof props.href === 'string' ? (
+        <Headless.CloseButton
+          as={Link}
+          {...props}
+          className={classes}
+          data-current={current ? 'true' : undefined}
+          ref={ref}
+        >
+          <TouchTarget>{children}</TouchTarget>
+        </Headless.CloseButton>
+      ) : (
+        <Headless.Button
+          {...props}
+          className={clsx('cursor-default', classes)}
+          data-current={current ? 'true' : undefined}
+          ref={ref}
+        >
+          <TouchTarget>{children}</TouchTarget>
+        </Headless.Button>
+      )}
+    </span>
+  )
+})
+
+export const SidebarItemUserAccount = forwardRef(function SidebarItem(
+  {
+    current,
+    className,
+    children,
+    ...props
+  }: { current?: boolean; className?: string; children: React.ReactNode } & (
+    | ({ href?: never } & Omit<Headless.ButtonProps, 'as' | 'className'>)
+    | ({ href: string } & Omit<Headless.ButtonProps<typeof Link>, 'as' | 'className'>)
+  ),
+  ref: React.ForwardedRef<HTMLAnchorElement | HTMLButtonElement>
+) {
+  let classes = clsx(
+    // Base
+    'flex w-full items-center gap-2.5 rounded-xl px-3.5 py-5 text-left text-base/6 font-extrabold text-white sm:py-3 sm:text-sm/5',
+    // Leading icon/icon-only
+    '*:data-[slot=icon]:size-6 *:data-[slot=icon]:shrink-0 *:data-[slot=icon]:fill-zinc-500 sm:*:data-[slot=icon]:size-5',
+    // Trailing icon (down chevron or similar)
+    '*:last:data-[slot=icon]:ml-auto *:last:data-[slot=icon]:size-5 sm:*:last:data-[slot=icon]:size-4',
+    // Avatar
+    '*:data-[slot=avatar]:-m-0.5 *:data-[slot=avatar]:size-7 sm:*:data-[slot=avatar]:size-6',
+    // Hover
+    'data-hover:*:data-',
+    // Active
+    'data-active:bg-zinc-950/5 data-active:*:data-[slot=icon]:fill-zinc-950',
+    // Current
+    // Dark mode
+    'text-white *:data-[slot=icon]:fill-zinc-400',
+    '',
+    'data-active:bg-white/5 data-active:*:data-[slot=icon]:fill-white',
+    'data-current:*:data-[slot=icon]:fill-white',
+    'data-current:bg-blue-600',
     'data-current:data-hover:bg-blue-600',
   )
 

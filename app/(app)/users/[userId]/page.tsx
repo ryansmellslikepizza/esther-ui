@@ -29,7 +29,7 @@ export default async function UserDetailPage({
   const canEditAdmin = meUserId != u?.userId;
 
   return (
-    <main className="font-sans max-w-3xl">
+    <main className="font-sans">
       <a className="text-sm text-blue-600 hover:underline mb-3 inline-block" href="/users">
         ← Back
       </a>

@@ -9,6 +9,7 @@ import { getSessionUser } from "@/lib/session";
 import { SidebarLayout } from "@/components/sidebar-layout";
 import { Navbar } from "@/components/navbar";
 import { useEffect, useState } from "react";
+
 import {
   Sidebar,
   SidebarBody,
@@ -18,6 +19,7 @@ import {
   SidebarLabel,
   SidebarFooter,
   SidebarHeading,
+  SidebarItemUserAccount,
 } from "@/components/sidebar";
 
 import {
@@ -39,6 +41,7 @@ import {
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [isAdmin, setIsAdmin] = useState(false);
+  const [firstName, setFirstName] = useState("");
   const pathname = usePathname();
   
   async function handleLogout() {
@@ -58,6 +61,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const u = getSessionUser();
     setIsAdmin(!!u?.isAdmin);
+    setFirstName(u?.firstName || "");
   }, []);
 
   return (
@@ -94,9 +98,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               </SidebarItem>
             </SidebarSection>
         
-            <SidebarSection>
+            {/* <SidebarSection >
               <SidebarHeading>User Account</SidebarHeading>
-              <SidebarItem className="pointer" href="/user/settings" {...(isActive("/user/") ? { current: true } : {})}>
+              <SidebarItem 
+                className="pointer" 
+                href="/user/settings" {...(isActive("/user/") ? { current: true } : {})}
+              >
                 <Cog6ToothIcon />
                 <SidebarLabel>Settings</SidebarLabel>
               </SidebarItem>
@@ -104,12 +111,20 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 <ArrowRightStartOnRectangleIcon />
                 <SidebarLabel>Logout</SidebarLabel>
               </SidebarItem>
-          </SidebarSection>
+          </SidebarSection> */}
+
           </SidebarBody>
 
-          <SidebarFooter className="pb-10 hide">
+          <SidebarFooter className="pb-8 pt-3">
             <SidebarSection>
-              <SidebarItem className="pointer" href="/user/settings">
+              <SidebarItemUserAccount>
+                <Avatar initials={firstName[0]} className="size-6 bg-zinc-900 text-white dark:bg-white dark:text-black" />
+                <SidebarLabel>{firstName}</SidebarLabel>
+              </SidebarItemUserAccount>
+              <SidebarItem
+                className="pointer" 
+                href="/user/settings" {...(isActive("/user/") ? { current: true } : {})}
+              >
                 <Cog6ToothIcon />
                 <SidebarLabel>Settings</SidebarLabel>
               </SidebarItem>
