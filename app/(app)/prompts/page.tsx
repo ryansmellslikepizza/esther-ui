@@ -5,6 +5,7 @@ import { Badge } from '@/components/badge'
 import { Button } from '@/components/button'
 import { Heading } from '@/components/heading'
 import { api } from "@/lib/api";
+import { LocalDateTime } from "@/components/local-datetime";
 
 type PromptListItem = {
   promptId: string;
@@ -238,9 +239,7 @@ function StatusPill({ active, deleted }: { active: boolean; deleted: boolean }) 
 
 function fmtDate(s?: string | null) {
   if (!s) return "-";
-  const d = new Date(s);
-  if (Number.isNaN(d.getTime())) return s;
-  return d.toLocaleString();
+  return <LocalDateTime value={s} />
 }
 
 function Th({ children }: { children: any }) {

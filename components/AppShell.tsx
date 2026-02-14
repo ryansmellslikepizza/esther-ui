@@ -65,16 +65,17 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       navbar={<Navbar />}
       sidebar={
         <Sidebar>
+          
           <SidebarHeader>
             <SidebarSection>
               <div className="mb-2 ml-2 mt-2 flex">
-                <Link href="/">Ester Dashboard</Link>
+                <Link href="/"><strong>Ester Dashboard</strong></Link>
               </div>
             </SidebarSection>
           </SidebarHeader>
+
           <SidebarBody>
             <SidebarSection>
-              
               <SidebarItem href="/" {...(isActive("/") ? { current: true } : {})} >
                 <HomeIcon />
                 <SidebarLabel>Home</SidebarLabel>

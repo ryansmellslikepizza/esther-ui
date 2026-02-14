@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import React from "react";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from '@/components/button'
+import { LocalDateTime } from "@/components/local-datetime";
 
 type PromptDoc = {
   promptId: string;
@@ -167,7 +168,7 @@ export default function PromptViewerPage({
               <Info label="Model" value={prompt.model || "-"} />
               <Info label="Version" value={String(prompt.version ?? "-")} />
               <Info label="Status" value={prompt.isDeleted ? "deleted" : prompt.isActive ? "active" : "inactive"} />
-              <Info label="Updated" value={fmtDate(prompt.updatedAt)} />
+              <Info label="Created" value={<LocalDateTime value={prompt.createdAt} />} />
             </div>
 
             {prompt.description ? (
@@ -197,7 +198,7 @@ export default function PromptViewerPage({
   );
 }
 
-function Info({ label, value }: { label: string; value: string }) {
+function Info({ label, value }: { label: string; value: any }) {
   return (
     <div>
       <div style={{ color: "#666", fontSize: 12, fontWeight: 800, textTransform: "uppercase" }}>{label}</div>
@@ -240,9 +241,7 @@ function CopyButton({ text }: { text: string }) {
 
 function fmtDate(s?: string | null) {
   if (!s) return "-";
-  const d = new Date(s);
-  if (Number.isNaN(d.getTime())) return s;
-  return d.toLocaleString();
+  return <LocalDateTime value={s} />
 }
 
 const cardStyle: React.CSSProperties = {

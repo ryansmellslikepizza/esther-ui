@@ -4,6 +4,7 @@ import { Badge } from '@/components/badge'
 import { Button } from '@/components/button'
 import { Heading } from '@/components/heading'
 import { api } from "@/lib/api";
+import { LocalDateTime } from "@/components/local-datetime";
 
 type JobRow = {
   jobId: string;
@@ -91,7 +92,9 @@ export default async function JobsPage() {
               <div className="col-span-2 text-yellow-500 font-semibold text-xs pt-1">{j.creator.firstName}</div>
               <div className="col-span-2"><StatusPill status={j.status} /></div>
               <div className="col-span-2 text-gray-500 text-xs"><ScanTypePill length={j.inputs.length} /></div>
-              <div className="col-span-2 text-gray-500">{j.createdAt ? new Date(j.createdAt).toLocaleString() : "-"}</div>
+              <div className="col-span-2 text-gray-500">
+                <LocalDateTime value={j.createdAt} />
+              </div>
               {/* <div className="col-span-2 text-gray-500">{j.eventsCount ?? 0}</div> */}
             </a>
           ))

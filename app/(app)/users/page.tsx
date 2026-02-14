@@ -4,6 +4,7 @@ import { Badge } from "@/components/badge";
 import { Button } from "@/components/button";
 import { Heading } from "@/components/heading";
 import { api } from "@/lib/api";
+import { LocalDateTime } from "@/components/local-datetime";
 
 type UserRow = {
   userId: string;
@@ -62,7 +63,7 @@ export default async function UsersPage() {
                   <AdminPill isAdmin={u.isAdmin} />
                 </div>
                 <div className="col-span-2 text-gray-500">
-                  {u.createdAt ? new Date(u.createdAt).toLocaleString() : "-"}
+                  <LocalDateTime value={u.createdAt} />
                 </div>
               </a>
             );

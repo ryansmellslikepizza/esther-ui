@@ -6,6 +6,7 @@ import { Badge } from '@/components/badge'
 import { Divider } from '@/components/divider'
 import { api } from "@/lib/api";
 import { DescriptionDetails, DescriptionList, DescriptionTerm } from '@/components/description-list'
+import { LocalDateTime } from "@/components/local-datetime";
 
 function StatusPill({ status }: { status: string }) {
   const base = "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold border";
@@ -96,8 +97,10 @@ export default async function JobDetail({
         <DescriptionTerm>Created By</DescriptionTerm>
         <DescriptionDetails><span className="text-yellow-500 font-bold">{job.creator.firstName}</span></DescriptionDetails>
 
-        <DescriptionTerm>Updated At</DescriptionTerm>
-        <DescriptionDetails>{job.updatedAt ? new Date(job.updatedAt).toLocaleString() : "-"}</DescriptionDetails>
+        <DescriptionTerm>Created At</DescriptionTerm>
+        <DescriptionDetails>
+          <LocalDateTime value={job.createdAt} />
+        </DescriptionDetails>
 
         {/* <DescriptionTerm>Access</DescriptionTerm>
         <DescriptionDetails>Admin</DescriptionDetails> */}

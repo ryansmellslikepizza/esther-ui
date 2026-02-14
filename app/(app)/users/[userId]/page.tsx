@@ -4,6 +4,7 @@ import { Heading } from "@/components/heading";
 import { Badge } from "@/components/badge";
 import { api } from "@/lib/api";
 import AdminToggle from "./admin-toggle";
+import { LocalDateTime } from "@/components/local-datetime";
 
 function AdminPill({ isAdmin }: { isAdmin?: boolean }) {
   return <Badge color={(isAdmin ? "green" : "zinc") as any}>{isAdmin ? "Admin" : "User"}</Badge>;
@@ -64,8 +65,8 @@ export default async function UserDetailPage({
           <Row label="First name" value={u?.firstName || "-"} />
           <Row label="Last name" value={u?.lastName || "-"} />
           <Row label="Age" value={u?.age || "-"} />
-          <Row label="Created" value={u?.createdAt ? new Date(u.createdAt).toLocaleString() : "-"} />
-          <Row label="Updated" value={u?.updatedAt ? new Date(u.updatedAt).toLocaleString() : "-"} />
+          <Row label="Created" value={u?.createdAt ? <LocalDateTime value={u.createdAt} /> : "-"} />
+          <Row label="Updated" value={u?.updatedAt ? <LocalDateTime value={u.updatedAt} /> : "-"} />
         </div>
       )}
     </main>
