@@ -52,7 +52,11 @@ export function SidebarLayout({
   let [showSidebar, setShowSidebar] = useState(false)
 
   return (
-    <div className="relative isolate flex min-h-svh w-full 
+    <div className="
+    relative isolate 
+    flex 
+    min-h-svh 
+    w-full 
     sidebar-layout
     max-lg:flex-col 
     ">
@@ -80,23 +84,24 @@ export function SidebarLayout({
       <main className="
       flex flex-1 
       flex-col 
-      lg:pb-2 
-      lg:m-4 
-      lg:mb-5 
+      lg:m-0 
+      lg:mb-0
       lg:ml-0
-      lg:min-w-0 lg:pt-2 lg:pr-2 lg:pl-64
+      lg:min-w-0 
+      lg:pt-0
+      lg:pb-0 
+      lg:pr-0 
+      lg:pl-64
       sm:pb-0
       ">
         <div className="
         grow p-6 
-        lg:rounded-2xl 
         lg:bg-white 
         lg:p-10 
         lg:shadow-xs 
         lg:ring-1 
-        lg:ring-zinc-950/5 
+        lg:ring-zinc-950/5
         content
-        
         ">
           <div className="mx-auto">{children}</div>
         </div>

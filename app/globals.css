@@ -15,6 +15,11 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  /* --color-sidebar-500: #222531; */
+  /* --color-sidebar-500: #191e25; */
+  --color-content: #191e26;
+  --color-sidebar-500: #191e25;
+  --color-sidebar-divider: #191e26;
 }
 
 pre {
@@ -52,9 +57,15 @@ input {
 }
 
 .sidebar-layout {
-  background: #020713;
+  /* background: #020713; */
+  /* background: #191d26; */
+  background: #151820;
+  /* background: #08090d; */
 }
 
+
+
 .content {
-  background: #0F1828;
+  /* background: #0F1828; */
+  background: #191e26;
 }

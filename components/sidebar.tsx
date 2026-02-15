@@ -17,7 +17,7 @@ export function SidebarHeader({ className, ...props }: React.ComponentPropsWitho
       {...props}
       className={clsx(
         className,
-        'flex flex-col p-4 border-b-1 border-gray-800 [&>[data-slot=section]+[data-slot=section]]:mt-2.5'
+        'flex flex-col p-4 border-b-1 border-sidebar-divider [&>[data-slot=section]+[data-slot=section]]:mt-2.5'
       )}
     />
   )
@@ -41,7 +41,7 @@ export function SidebarFooter({ className, ...props }: React.ComponentPropsWitho
       {...props}
       className={clsx(
         className,
-        'flex flex-col border-t border-t-1 border-gray-800 p-4 [&>[data-slot=section]+[data-slot=section]]:mt-2.5'
+        'flex flex-col border-t border-t-1 border-sidebar-divider p-4 [&>[data-slot=section]+[data-slot=section]]:mt-2.5'
       )}
     />
   )
@@ -85,19 +85,20 @@ export const SidebarItem = forwardRef(function SidebarItem(
 ) {
   let classes = clsx(
     // Base
-    `flex w-full 
+    `
+    flex w-full 
     items-center 
-    rounded-2xl 
+    rounded-lg 
     gap-2.5 
     text-left
     text-base/6 
     font-medium 
     text-white 
     py-3 px-3
-    sm:rounded-2xl
+    
     sm:text-sm/5
     lg:py-3
-    lg:px-5
+    lg:px-4
     `,
     // Leading icon/icon-only
     '*:data-[slot=icon]:size-6 *:data-[slot=icon]:shrink-0 *:data-[slot=icon]:fill-zinc-500 sm:*:data-[slot=icon]:size-5',
@@ -112,7 +113,7 @@ export const SidebarItem = forwardRef(function SidebarItem(
     // Current
     // Dark mode
     'text-white *:data-[slot=icon]:fill-zinc-400',
-    'data-hover:bg-gray-900 data-hover:*:data-[slot=icon]:fill-white',
+    'data-hover:bg-sidebar-500 data-hover:*:data-[slot=icon]:fill-white',
     'data-active:bg-white/5 data-active:*:data-[slot=icon]:fill-white',
     'data-current:*:data-[slot=icon]:fill-white',
     'data-current:bg-blue-600',
@@ -166,7 +167,7 @@ export const SidebarItemUserAccount = forwardRef(function SidebarItem(
 ) {
   let classes = clsx(
     // Base
-    'flex w-full items-center gap-2.5 rounded-xl px-3.5 py-5 text-left text-base/6 font-extrabold text-white sm:py-3 sm:text-sm/5',
+    'flex w-full items-center gap-2.5 rounded-xl px-4 py-5 text-left text-base/6 font-extrabold text-white sm:py-3 sm:text-sm/5',
     // Leading icon/icon-only
     '*:data-[slot=icon]:size-6 *:data-[slot=icon]:shrink-0 *:data-[slot=icon]:fill-zinc-500 sm:*:data-[slot=icon]:size-5',
     // Trailing icon (down chevron or similar)

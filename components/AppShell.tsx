@@ -115,7 +115,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
           </SidebarBody>
 
-          <SidebarFooter className="pb-8 pt-3">
+          <SidebarFooter className="pb-8 pt-6">
             <SidebarSection>
               <SidebarItemUserAccount>
                 <Avatar initials={firstName[0]} className="size-6 bg-zinc-900 text-white dark:bg-white dark:text-black" />
