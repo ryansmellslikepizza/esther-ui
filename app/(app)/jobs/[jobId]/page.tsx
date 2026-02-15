@@ -83,7 +83,7 @@ export default async function JobDetail({
 
       <div className="flex w-full flex-wrap items-end justify-between gap-4 border-b pb-5 border-white/10">
         <Heading>Job Page</Heading>
-        <JobDelete jobId={job.jobId} />
+        {/* <JobDelete jobId={job.jobId} /> */}
       </div>
 
       <DescriptionList className="mb-4">
