@@ -7,6 +7,7 @@ import { Divider } from '@/components/divider'
 import { api } from "@/lib/api";
 import { DescriptionDetails, DescriptionList, DescriptionTerm } from '@/components/description-list'
 import { LocalDateTime } from "@/components/local-datetime";
+import JobDelete from "./job-delete";
 
 function StatusPill({ status }: { status: string }) {
   const base = "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold border";
@@ -82,7 +83,7 @@ export default async function JobDetail({
 
       <div className="flex w-full flex-wrap items-end justify-between gap-4 border-b pb-5 border-white/10">
         <Heading>Job Page</Heading>
-        {/* <Button color="red" className="">Delete</Button> */}
+        <JobDelete jobId={job.jobId} />
       </div>
 
       <DescriptionList className="mb-4">
