@@ -3,7 +3,7 @@ export type SessionUser = {
   email?: string;
   firstName?: string;
   lastName?: string;
-  isAdmin: boolean;
+  roles: string[];
 };
 
 const KEY = "session_user";

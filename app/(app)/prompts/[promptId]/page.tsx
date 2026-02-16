@@ -53,8 +53,6 @@ export default function PromptViewerPage({
         throw new Error(data?.error || `Request failed (HTTP ${res.status})`);
       }
 
-      console.log(data);
-
       setPrompt(data?.prompt || null);
     } catch (e: any) {
       setError(e?.message || String(e));

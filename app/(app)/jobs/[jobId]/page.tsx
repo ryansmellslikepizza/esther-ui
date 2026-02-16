@@ -8,6 +8,7 @@ import { api } from "@/lib/api";
 import { DescriptionDetails, DescriptionList, DescriptionTerm } from '@/components/description-list'
 import { LocalDateTime } from "@/components/local-datetime";
 import JobDelete from "./job-delete";
+import { capitalize } from "@/lib/helpers";
 
 function StatusPill({ status }: { status: string }) {
   const base = "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold border";
@@ -20,7 +21,7 @@ function StatusPill({ status }: { status: string }) {
   else if (s.includes("done") || s.includes("complete")) cls = "green";
   else if (s.includes("upload")) cls = "yellow";
 
-  return <Badge color={cls as any}>{status}</Badge>;
+  return <Badge color={cls as any}>{capitalize(status)}</Badge>;
 }
 
 function ScanTypePill({ length }: { length: number }) {
@@ -124,7 +125,6 @@ export default async function JobDetail({
                 const asset = inputsAssets[type] || {};
                 const thumb = asset.thumb; // keep if you still want it
                 const files: string[] = asset.files || [];
-                // console.log(asset)
                 return (
                   <div key={type} className="overflow-hidden rounded bg-black/5">
                     <div className="flex items-baseline justify-between">
@@ -164,7 +164,6 @@ export default async function JobDetail({
                 const asset = inputsAssets[type] || {};
                 const thumb = asset.thumb; // keep if you still want it
                 const files: string[] = asset.files || [];
-                console.log(asset)
                 return (
                   <div key={type} className="rounded-lg border p-3">
                     <div className="flex items-baseline justify-between">

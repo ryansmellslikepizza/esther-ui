@@ -42,7 +42,12 @@ export default function LoginPage() {
 
         try {
             type LoginResp =
-              | { ok: true; user: { userId: string; firstName: string; lastName: string; isAdmin: boolean } }
+              | { ok: true; user: { 
+                userId: string; 
+                firstName: string; 
+                lastName: string; 
+                roles: string[];
+              } }
               | { ok: false; error: string };
 
             const data = await api.post<LoginResp>("/api/login", { email, password });

@@ -1,10 +1,10 @@
 export const dynamic = "force-dynamic";
 
 import { Badge } from "@/components/badge";
-import { Button } from "@/components/button";
 import { Heading } from "@/components/heading";
 import { api } from "@/lib/api";
 import { LocalDateTime } from "@/components/local-datetime";
+import { RolePill } from "@/components/role-pill";
 
 type UserRow = {
   userId: string;
@@ -14,11 +14,8 @@ type UserRow = {
   isAdmin?: boolean;
   createdAt?: string | null;
   updatedAt?: string | null;
+  roles?: string[];
 };
-
-function AdminPill({ isAdmin }: { isAdmin?: boolean }) {
-  return <Badge color={(isAdmin ? "green" : "zinc") as any}>{isAdmin ? "Admin" : "User"}</Badge>;
-}
 
 export default async function UsersPage() {
   const data = await api.get("/api/users?limit=50");
@@ -60,7 +57,7 @@ export default async function UsersPage() {
                 <div className="col-span-4 font-semibold text-xs pt-1">{fullName}</div>
                 <div className="col-span-4 text-gray-200 text-xs pt-1">{u.email}</div>
                 <div className="col-span-2">
-                  <AdminPill isAdmin={u.isAdmin} />
+                  <RolePill roles={u.roles} />
                 </div>
                 <div className="col-span-2 text-gray-500">
                   <LocalDateTime value={u.createdAt} />

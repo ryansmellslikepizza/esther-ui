@@ -182,7 +182,6 @@ export default function SettingsPage() {
         setSessionUser(updated as any);
       }
 
-      console.log(data);
     } catch (err: any) {
       setError(err?.message || String(err));
     } finally {

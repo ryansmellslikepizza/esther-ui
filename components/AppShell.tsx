@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { Avatar } from '@/components/avatar'
-// import { Sidebar, SidebarBody, SidebarFooter, SidebarItem, SidebarLabel, SidebarSection } from '@/components/sidebar'
 import { useRouter, usePathname } from "next/navigation";
 import { api } from "@/lib/api";
 import { getSessionUser } from "@/lib/session";
@@ -40,7 +39,6 @@ import {
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const [isAdmin, setIsAdmin] = useState(false);
   const [firstName, setFirstName] = useState("");
   const pathname = usePathname();
   
@@ -60,7 +58,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const u = getSessionUser();
-    setIsAdmin(!!u?.isAdmin);
     setFirstName(u?.firstName || "");
   }, []);
 

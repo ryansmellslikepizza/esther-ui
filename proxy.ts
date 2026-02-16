@@ -62,13 +62,16 @@ export async function proxy(req: NextRequest) {
     const key = new TextEncoder().encode(secret);
 
     const { payload } = await jwtVerify(token, key);
-
+    
     // ✅ Admin gate: if route is admin-only and user isn't admin, redirect to /not-admin
-    if (isAdminOnlyPath(pathname) && payload?.isAdmin !== true) {
+    const roles = Array.isArray(payload?.roles) ? payload.roles : [];
+    const isPrivileged = roles.includes("admin") || roles.includes("super");
+    
+    if (isAdminOnlyPath(pathname) && !isPrivileged) {
       const url = req.nextUrl.clone();
       url.pathname = "/not-admin";
       url.searchParams.set("next", pathname);
-      return NextResponse.redirect(url);
+      // return NextResponse.redirect(url);
     }
 
     return NextResponse.next();

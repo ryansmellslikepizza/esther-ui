@@ -5,6 +5,7 @@ import { Button } from '@/components/button'
 import { Heading } from '@/components/heading'
 import { api } from "@/lib/api";
 import { LocalDateTime } from "@/components/local-datetime";
+import { capitalize } from "@/lib/helpers";
 
 type JobRow = {
   jobId: string;
@@ -17,7 +18,6 @@ type JobRow = {
   creator: any;
 };
 
-
 function StatusPill({ status }: { status: string }) {
   const base = "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold border";
   const s = (status || "unknown").toLowerCase();
@@ -29,7 +29,7 @@ function StatusPill({ status }: { status: string }) {
   else if (s.includes("done") || s.includes("complete")) cls = "green";
   else if (s.includes("upload")) cls = "yellow";
 
-  return <Badge color={cls as any}>{status}</Badge>;
+  return <Badge color={cls as any}>{capitalize(status)}</Badge>;
 }
 
 function ScanTypePill({ length }: { length: number }) {

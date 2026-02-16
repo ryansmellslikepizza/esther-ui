@@ -6,6 +6,7 @@ import { Button } from '@/components/button'
 import { Heading } from '@/components/heading'
 import { api } from "@/lib/api";
 import { LocalDateTime } from "@/components/local-datetime";
+import { capitalize } from "@/lib/helpers";
 
 type PromptListItem = {
   promptId: string;
@@ -234,7 +235,7 @@ function StatusPill({ active, deleted }: { active: boolean; deleted: boolean }) 
   else if (s.includes("done") || s.includes("complete")) cls = "green";
   else if (s.includes("upload")) cls = "yellow";
 
-  return <Badge color={color as any}>{label}</Badge>;
+  return <Badge color={color as any}>{capitalize(label)}</Badge>;
 }
 
 function fmtDate(s?: string | null) {
